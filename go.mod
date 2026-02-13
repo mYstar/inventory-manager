@@ -1,0 +1,1 @@
+module inventory_manager

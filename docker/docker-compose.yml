@@ -1,0 +1,7 @@
+services:
+  inventory_manager:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:80"
