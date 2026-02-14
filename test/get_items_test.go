@@ -21,7 +21,6 @@ func TestGetItems(t *testing.T) {
 	t.Cleanup(func() { api.Items = originalItems })
 
 	router := api.SetupRoutes()
-
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/items", nil)
 	router.ServeHTTP(w, req)
