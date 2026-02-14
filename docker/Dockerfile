@@ -1,7 +1,7 @@
-FROM golang:1.24-alpine AS builder
+FROM golang:1.26-alpine AS builder
 WORKDIR /build
 COPY . .
-RUN go build -o main .
+RUN go build -o main ./cmd/inventory_manager
 
 FROM alpine:latest
 WORKDIR /app
