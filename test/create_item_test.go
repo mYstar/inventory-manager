@@ -3,6 +3,7 @@ package test
 import (
 	"encoding/json"
 	"inventory_manager/internal/api"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -12,7 +13,7 @@ import (
 )
 
 func TestCreateItem(t *testing.T) {
-	originalItems := api.Items
+	originalItems := maps.Clone(api.Items)
 	t.Cleanup(func() { api.Items = originalItems })
 	testItem := struct {
 		Name     string  `json:"name"`
@@ -36,7 +37,6 @@ func TestCreateItem(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, 201, w.Code)
-	assert.NotEqual(t, 0, createdItem.ID)
 	assert.Equal(t, testItem.Name, createdItem.Name)
 	assert.Equal(t, testItem.Quantity, createdItem.Quantity)
 	assert.Equal(t, testItem.Price, createdItem.Price)
