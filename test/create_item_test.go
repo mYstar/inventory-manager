@@ -4,9 +4,6 @@ import (
 	"encoding/json"
 	"inventory_manager/internal/api"
 	"maps"
-	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,36 +19,27 @@ func TestCreateItem(t *testing.T) {
 	}
 	testItemJson, _ := json.Marshal(testItem)
 
-	router := api.SetupRoutes()
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/item", strings.NewReader(string(testItemJson)))
-	router.ServeHTTP(w, req)
+	response := sendTestRequest("POST", "/item", string(testItemJson))
 
-	createdItemJson := w.Body.String()
+	createdItemJson := response.Body.String()
 	createdItem := api.Item{}
 	err := json.Unmarshal([]byte(createdItemJson), &createdItem)
 
 	assert.Nil(t, err)
-	assert.Equal(t, 201, w.Code)
+	assert.Equal(t, 201, response.Code)
 	assert.Equal(t, testItem.Name, createdItem.Name)
 	assert.Equal(t, testItem.Quantity, createdItem.Quantity)
 	assert.Equal(t, testItem.Price, createdItem.Price)
 }
 
 func TestCreateItemWithInvalidJson(t *testing.T) {
-	router := api.SetupRoutes()
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/item", strings.NewReader("{"))
-	router.ServeHTTP(w, req)
+	response := sendTestRequest("POST", "/item", "{")
 
-	assert.Equal(t, 400, w.Code)
+	assert.Equal(t, 400, response.Code)
 }
 
 func TestCreateItemWithMissingValues(t *testing.T) {
-	router := api.SetupRoutes()
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/item", strings.NewReader("{\"name\": \"Book\", \"price\": 10.99}"))
-	router.ServeHTTP(w, req)
+	response := sendTestRequest("POST", "/item", "{\"name\": \"Book\", \"price\": 10.99}")
 
-	assert.Equal(t, 400, w.Code)
+	assert.Equal(t, 400, response.Code)
 }
