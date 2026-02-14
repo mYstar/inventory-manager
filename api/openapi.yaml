@@ -50,6 +50,46 @@ paths:
                 $ref: '#/components/schemas/Error'
 
   /item/{id}:
+    patch:
+      description: Alters the quantity associated to an Item in the inventory.
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the item to delete.
+          required: true
+          schema:
+            example: 1
+            type: uint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Delta"
+      responses:
+        '200':
+          description: Returns the updated Item on success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Items'
+        '400':
+          description: The given id is not an unsigned int.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: The given id was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: The given delta would cause the quantity to become negative.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     delete:
       description: Deletes an item from the inventory.
       parameters:
@@ -116,6 +156,14 @@ components:
           format: double
           example: 119.99
           description: The monetary value of the inventory item in euro.
+
+    Delta:
+      type: object
+      properties:
+        quantityDelta:
+          type: integer
+          format: int64
+          example: -5
 
     Error:
       type: object

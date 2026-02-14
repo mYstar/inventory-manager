@@ -15,11 +15,7 @@ import (
 func TestCreateItem(t *testing.T) {
 	originalItems := maps.Clone(api.Items)
 	t.Cleanup(func() { api.Items = originalItems })
-	testItem := struct {
-		Name     string  `json:"name"`
-		Price    float32 `json:"price"`
-		Quantity uint    `json:"quantity"`
-	}{
+	testItem := api.Item{
 		Name:     "Book",
 		Price:    10.99,
 		Quantity: 1,
