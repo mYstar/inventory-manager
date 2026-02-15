@@ -4,4 +4,4 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     ports:
-      - "8080:80"
+      - "${API_PORT}:80"

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"net/http"
 	"slices"
 	"strconv"
@@ -92,8 +91,9 @@ func createItem(c *gin.Context) {
 
 // deleteItem deletes an item from the inventory.
 func deleteItem(c *gin.Context) {
-	id, err := getId(c)
-	if err != nil {
+	id, httpCode, errResponse := getId(c)
+	if errResponse != nil {
+		c.JSON(httpCode, errResponse)
 		return
 	}
 
@@ -104,13 +104,14 @@ func deleteItem(c *gin.Context) {
 
 // alterQuantity deletes an item from the inventory.
 func alterQuantity(c *gin.Context) {
-	id, err := getId(c)
-	if err != nil {
+	id, httpCode, errResponse := getId(c)
+	if errResponse != nil {
+		c.JSON(httpCode, errResponse)
 		return
 	}
 
 	var request DeltaRequest
-	err = c.BindJSON(&request)
+	err := c.BindJSON(&request)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, NewError(err.Error()))
 		return
@@ -134,18 +135,16 @@ func alterQuantity(c *gin.Context) {
 
 // getId extracts and validates the "id" parameter from the request.
 // returns the item ID or an error if the id can't be parsed or does not exist.
-func getId(c *gin.Context) (uint, error) {
+func getId(c *gin.Context) (uint, int, *ErrorResponse) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, NewError("Invalid item ID."))
-		return 0, err
+		return 0, http.StatusBadRequest, new(NewError("Invalid item ID."))
 	}
 	_, exists := Items[uint(id)]
 	if !exists {
-		c.JSON(http.StatusNotFound, NewError("Item ID does not exist."))
-		return 0, errors.New("item id does not exist")
+		return 0, http.StatusNotFound, new(NewError("Item ID does not exist."))
 	}
-	return uint(id), nil
+	return uint(id), 0, nil
 }
 
 func NewError(message string) ErrorResponse {
