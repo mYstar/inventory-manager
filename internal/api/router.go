@@ -9,7 +9,7 @@ import (
 )
 
 type DeltaRequest struct {
-	QuantityDelta int `json:"quantity_delta"`
+	QuantityDelta *int `json:"quantity_delta"`
 }
 
 type IdsQuery struct {
@@ -113,11 +113,15 @@ func alterQuantity(c *gin.Context) {
 	var request DeltaRequest
 	err := c.BindJSON(&request)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, NewError(err.Error()))
+		c.JSON(http.StatusBadRequest, NewError("Request body is not valid JSON."))
+		return
+	}
+	if request.QuantityDelta == nil {
+		c.JSON(http.StatusBadRequest, NewError("Request body does not contain required fields."))
 		return
 	}
 
-	var dQuantity = request.QuantityDelta
+	var dQuantity = *request.QuantityDelta
 	var item = Items[id]
 	switch {
 	case dQuantity < 0:
