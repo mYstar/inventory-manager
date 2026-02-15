@@ -33,6 +33,45 @@ func TestCreateItem(t *testing.T) {
 	assert.Equal(t, testItem.Price, createdItem.Price)
 }
 
+func TestCreateItemExistingValues(t *testing.T) {
+	originalItems := maps.Clone(api.Items)
+	t.Cleanup(func() { api.Items = originalItems })
+
+	initialItems := make(map[uint]api.Item)
+	initialItems[1] = api.Item{Name: "Book", Price: 10.99, Quantity: 1}
+	initialItems[3] = api.Item{Name: "Laptop", Price: 1099.00, Quantity: 3}
+	api.Items = maps.Clone(initialItems)
+
+	testItem := api.Item{
+		Name:     "Sofa",
+		Price:    509.99,
+		Quantity: 3,
+	}
+	testItemJson, _ := json.Marshal(testItem)
+
+	// check if creating works
+	response := sendTestRequest("POST", "/item", string(testItemJson))
+
+	createdItemJson := response.Body.String()
+	createdItem := api.ItemResponse{}
+	err := json.Unmarshal([]byte(createdItemJson), &createdItem)
+
+	assert.Nil(t, err)
+	assert.Equal(t, 201, response.Code)
+	assert.Equal(t, uint(4), createdItem.ID)
+	assert.Equal(t, testItem.Name, createdItem.Name)
+	assert.Equal(t, testItem.Quantity, createdItem.Quantity)
+	assert.Equal(t, testItem.Price, createdItem.Price)
+
+	// check if the new item is in the inventory
+	response = sendTestRequest("GET", "/items", "")
+
+	initialItems[4] = testItem
+	expected, _ := json.Marshal(initialItems)
+	assert.Equal(t, 200, response.Code)
+	assert.Equal(t, string(expected), response.Body.String())
+}
+
 func TestCreateItemWithInvalidJson(t *testing.T) {
 	response := sendTestRequest("POST", "/item", "{")
 

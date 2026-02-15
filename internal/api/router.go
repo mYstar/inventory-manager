@@ -82,7 +82,13 @@ func createItem(c *gin.Context) {
 		return
 	}
 
-	newIdx := uint(len(Items)) + 1
+	maxKey := uint(0)
+	for key := range Items {
+		if key > maxKey {
+			maxKey = key
+		}
+	}
+	newIdx := maxKey + 1
 	Items[newIdx] = item
 
 	response := ItemResponse{ID: newIdx, Name: item.Name, Price: item.Price, Quantity: item.Quantity}
