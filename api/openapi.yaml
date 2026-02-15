@@ -7,14 +7,30 @@ info:
 paths:
   /items:
     get:
-      description: Returns all items in inventory.
+      description: Fetches all items in the inventory.
       responses:
         '200':
-          description: Returns the items in the inventory as a JSON array of items.
+          description: Returns the items as a JSON array.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Items'
+        '500':
+          description: An unexpected server error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /items/value:
+    get:
+      description: Calculates the total value of items in the inventory.
+      responses:
+        '200':
+          description: Returns the value as a JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Value'
         '500':
           description: An unexpected server error occurred.
           content:
@@ -55,7 +71,7 @@ paths:
       parameters:
         - name: id
           in: path
-          description: The ID of the item to delete.
+          description: The ID of the item to manipulate.
           required: true
           schema:
             example: 1
@@ -164,6 +180,14 @@ components:
           type: integer
           format: int64
           example: -5
+
+    Value:
+      type: object
+      properties:
+        quantityDelta:
+          type: number
+          format: float
+          example: 124.89
 
     Error:
       type: object

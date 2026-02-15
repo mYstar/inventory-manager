@@ -8,13 +8,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Delta struct {
+type DeltaRequest struct {
 	QuantityDelta int
+}
+
+type ValueResponse struct {
+	Success bool
+	Value   float32
 }
 
 func SetupRoutes() *gin.Engine {
 	router := gin.Default()
 	router.GET("/items", getItems)
+	router.GET("/items/value", getItemsValue)
 	router.POST("/item", createItem)
 	router.PATCH("/item/:id", alterQuantity)
 	router.DELETE("/item/:id", deleteItem)
@@ -24,6 +30,18 @@ func SetupRoutes() *gin.Engine {
 // getItems responds with the list of all albums as JSON.
 func getItems(c *gin.Context) {
 	c.JSON(http.StatusOK, Items)
+}
+
+// getItemsValue responds with the value sum of the given Items or all Items if no Item IDs are given in the request body.
+func getItemsValue(c *gin.Context) {
+
+	sum := float32(0.0)
+	for _, item := range Items {
+		sum += item.Price * float32(item.Quantity)
+	}
+
+	response := ValueResponse{Success: true, Value: sum}
+	c.JSON(http.StatusOK, response)
 }
 
 // createItem creates a new item and adds it to the inventory.
@@ -65,14 +83,14 @@ func alterQuantity(c *gin.Context) {
 		return
 	}
 
-	var operation Delta
-	err = c.BindJSON(&operation)
+	var request DeltaRequest
+	err = c.BindJSON(&request)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, NewError(err.Error()))
 		return
 	}
 
-	var dQuantity = operation.QuantityDelta
+	var dQuantity = request.QuantityDelta
 	var item = Items[id]
 	switch {
 	case dQuantity < 0:

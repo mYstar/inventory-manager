@@ -13,10 +13,10 @@ func TestAddToQuantity(t *testing.T) {
 	originalItems := maps.Clone(api.Items)
 	t.Cleanup(func() { api.Items = originalItems })
 	api.Items[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 1}
-	requestDelta := api.Delta{QuantityDelta: 3}
-	requestDeltaJson, _ := json.Marshal(requestDelta)
+	request := api.DeltaRequest{QuantityDelta: 3}
+	requestJson, _ := json.Marshal(request)
 
-	response := sendTestRequest("PATCH", "/item/1", string(requestDeltaJson))
+	response := sendTestRequest("PATCH", "/item/1", string(requestJson))
 
 	expected := api.Item{Name: "Book", Price: 12.99, Quantity: 4}
 	expectedJson, _ := json.Marshal(expected)
@@ -28,10 +28,10 @@ func TestSubtractFromQuantity(t *testing.T) {
 	originalItems := maps.Clone(api.Items)
 	t.Cleanup(func() { api.Items = originalItems })
 	api.Items[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 5}
-	requestDelta := api.Delta{QuantityDelta: -3}
-	requestDeltaJson, _ := json.Marshal(requestDelta)
+	request := api.DeltaRequest{QuantityDelta: -3}
+	requestJson, _ := json.Marshal(request)
 
-	response := sendTestRequest("PATCH", "/item/1", string(requestDeltaJson))
+	response := sendTestRequest("PATCH", "/item/1", string(requestJson))
 
 	expected := api.Item{Name: "Book", Price: 12.99, Quantity: 2}
 	expectedJson, _ := json.Marshal(expected)
@@ -43,10 +43,10 @@ func TestSubtractUnderflow(t *testing.T) {
 	originalItems := maps.Clone(api.Items)
 	t.Cleanup(func() { api.Items = originalItems })
 	api.Items[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 5}
-	requestDelta := api.Delta{QuantityDelta: -7}
-	requestDeltaJson, _ := json.Marshal(requestDelta)
+	request := api.DeltaRequest{QuantityDelta: -7}
+	requestJson, _ := json.Marshal(request)
 
-	response := sendTestRequest("PATCH", "/item/1", string(requestDeltaJson))
+	response := sendTestRequest("PATCH", "/item/1", string(requestJson))
 
 	expected := api.NewError("Quantity is too small to perform the operation.")
 	expectedJson, _ := json.Marshal(expected)
