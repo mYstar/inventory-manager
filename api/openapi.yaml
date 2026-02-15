@@ -1,8 +1,9 @@
 openapi: 3.1.0
 info:
   title: Inventory Manager
-  description:
-    Inventory Manager that stores items, manipulates their quantities, and calculates the value of inventory items.
+  description: >
+    Inventory Manager that stores items, manipulates their quantities,
+    and calculates the value of inventory items.
   version: 1.0.0
 paths:
   /items:
@@ -10,7 +11,7 @@ paths:
       description: Fetches all items in the inventory.
       responses:
         '200':
-          description: Returns the items as a JSON array.
+          description: Returns the items as a JSON object keyed by item ID.
           content:
             application/json:
               schema:
@@ -24,6 +25,18 @@ paths:
   /items/value:
     get:
       description: Calculates the total value of items in the inventory.
+      parameters:
+        - name: ids
+          in: query
+          description: >
+            The IDs of the items to calculate the value for. 
+            If omitted, the value of all items in the inventory will be calculated.
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+          style: form
       responses:
         '200':
           description: Returns the value as a JSON object.
@@ -75,7 +88,8 @@ paths:
           required: true
           schema:
             example: 1
-            type: uint
+            type: integer
+            format: uint64
       requestBody:
         content:
           application/json:
@@ -115,7 +129,8 @@ paths:
           required: true
           schema:
             example: 1
-            type: uint
+            type: integer
+            format: uint64
       responses:
         '204':
           description: The item was deleted successfully.
@@ -160,8 +175,7 @@ components:
         name:
           type: string
           example: 'Table'
-          description:
-            The name of the inventory item.
+          description: The name of the inventory item.
         quantity:
           type: integer
           format: int64
@@ -176,7 +190,7 @@ components:
     Delta:
       type: object
       properties:
-        quantityDelta:
+        quantity_delta:
           type: integer
           format: int64
           example: -5
@@ -184,7 +198,10 @@ components:
     Value:
       type: object
       properties:
-        quantityDelta:
+        success:
+          type: boolean
+          example: true
+        value:
           type: number
           format: float
           example: 124.89

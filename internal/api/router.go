@@ -3,18 +3,28 @@ package api
 import (
 	"errors"
 	"net/http"
+	"slices"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 type DeltaRequest struct {
-	QuantityDelta int
+	QuantityDelta int `json:"quantity_delta"`
+}
+
+type IdsQuery struct {
+	Ids []uint `form:"ids"`
 }
 
 type ValueResponse struct {
-	Success bool
-	Value   float32
+	Success bool    `json:"success"`
+	Value   float32 `json:"value"`
+}
+
+type ErrorResponse struct {
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
 }
 
 func SetupRoutes() *gin.Engine {
@@ -34,10 +44,17 @@ func getItems(c *gin.Context) {
 
 // getItemsValue responds with the value sum of the given Items or all Items if no Item IDs are given in the request body.
 func getItemsValue(c *gin.Context) {
-
+	query := IdsQuery{}
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, NewError("One or more of given ids cannot be interpreted as uint."))
+		return
+	}
 	sum := float32(0.0)
-	for _, item := range Items {
-		sum += item.Price * float32(item.Quantity)
+	isEmptyQuery := query.Ids == nil
+	for id, item := range Items {
+		if isEmptyQuery || slices.Contains(query.Ids, id) {
+			sum += item.Price * float32(item.Quantity)
+		}
 	}
 
 	response := ValueResponse{Success: true, Value: sum}
@@ -122,6 +139,6 @@ func getId(c *gin.Context) (uint, error) {
 	return uint(id), nil
 }
 
-func NewError(message string) map[string]string {
-	return map[string]string{"error": message}
+func NewError(message string) ErrorResponse {
+	return ErrorResponse{Error: message}
 }
