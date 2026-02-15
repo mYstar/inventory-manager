@@ -64,7 +64,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Item'
+                $ref: '#/components/schemas/CreatedItem'
         '400':
           description: The given data was invalid.
           content:
@@ -172,6 +172,28 @@ components:
     Item:
       type: object
       properties:
+        name:
+          type: string
+          example: 'Table'
+          description: The name of the inventory item.
+        quantity:
+          type: integer
+          format: int64
+          example: 10
+          description: The current quantity of the inventory item.
+        price:
+          type: number
+          format: double
+          example: 119.99
+          description: The monetary value of the inventory item in euro.
+
+    CreatedItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: The ID of the inventory item.
         name:
           type: string
           example: 'Table'

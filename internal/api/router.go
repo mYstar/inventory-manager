@@ -17,6 +17,13 @@ type IdsQuery struct {
 	Ids []uint `form:"ids"`
 }
 
+type ItemResponse struct {
+	ID       uint    `json:"id"`
+	Name     string  `json:"name"`
+	Price    float32 `json:"price"`
+	Quantity uint    `json:"quantity"`
+}
+
 type ValueResponse struct {
 	Success bool    `json:"success"`
 	Value   float32 `json:"value"`
@@ -67,18 +74,20 @@ func createItem(c *gin.Context) {
 
 	err := c.BindJSON(&item)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, NewError(err.Error()))
+		c.JSON(http.StatusBadRequest, NewError("Request body is not valid JSON."))
 		return
 	}
 	isInvalid := item.Name == "" || item.Price == 0 || item.Quantity == 0
 	if isInvalid {
-		c.JSON(http.StatusBadRequest, NewError("Missing item data"))
+		c.JSON(http.StatusBadRequest, NewError("Missing item data."))
 		return
 	}
 
-	Items[uint(len(Items))+1] = item
+	newIdx := uint(len(Items)) + 1
+	Items[newIdx] = item
 
-	c.JSON(http.StatusCreated, item)
+	response := ItemResponse{ID: newIdx, Name: item.Name, Price: item.Price, Quantity: item.Quantity}
+	c.JSON(http.StatusCreated, response)
 }
 
 // deleteItem deletes an item from the inventory.
