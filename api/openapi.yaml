@@ -5,6 +5,9 @@ info:
     Inventory Manager that stores items, manipulates their quantities,
     and calculates the value of inventory items.
   version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local test server
 paths:
   /items:
     get:
@@ -64,7 +67,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreatedItem'
+                $ref: '#/components/schemas/ResultItem'
         '400':
           description: The given data was invalid.
           content:
@@ -101,7 +104,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Items'
+                $ref: '#/components/schemas/ResultItem'
         '400':
           description: The given id is not an unsigned int.
           content:
@@ -187,7 +190,7 @@ components:
           example: 119.99
           description: The monetary value of the inventory item in euro.
 
-    CreatedItem:
+    ResultItem:
       type: object
       properties:
         id:
@@ -231,6 +234,9 @@ components:
     Error:
       type: object
       properties:
+        success:
+          type: boolean
+          example: false
         error:
           type: string
           example: 'Error message.'
