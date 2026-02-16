@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"slices"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -45,7 +44,7 @@ func SetupRoutes() *gin.Engine {
 
 // getItems responds with the list of all albums as JSON.
 func getItems(c *gin.Context) {
-	c.JSON(http.StatusOK, Items)
+	c.JSON(http.StatusOK, Inventory)
 }
 
 // getItemsValue responds with the value sum of the given Items or all Items if no Item IDs are given in the request body.
@@ -55,22 +54,16 @@ func getItemsValue(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, NewError("One or more of given ids cannot be interpreted as uint."))
 		return
 	}
-	sum := float32(0.0)
-	isEmptyQuery := query.Ids == nil
-	for id, item := range Items {
-		if isEmptyQuery || slices.Contains(query.Ids, id) {
-			sum += item.Price * float32(item.Quantity)
-		}
-	}
 
-	response := ValueResponse{Success: true, Value: sum}
+	value := Inventory.calculateValue(query.Ids)
+
+	response := ValueResponse{Success: true, Value: value}
 	c.JSON(http.StatusOK, response)
 }
 
 // createItem creates a new item and adds it to the inventory.
 func createItem(c *gin.Context) {
 	var item Item
-
 	err := c.BindJSON(&item)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, NewError("Request body is not valid JSON."))
@@ -82,16 +75,9 @@ func createItem(c *gin.Context) {
 		return
 	}
 
-	maxKey := uint(0)
-	for key := range Items {
-		if key > maxKey {
-			maxKey = key
-		}
-	}
-	newIdx := maxKey + 1
-	Items[newIdx] = item
+	newIdx, newItem := Inventory.createItem(item)
 
-	response := ItemResponse{ID: newIdx, Name: item.Name, Price: item.Price, Quantity: item.Quantity}
+	response := ItemResponse{ID: newIdx, Name: newItem.Name, Price: newItem.Price, Quantity: newItem.Quantity}
 	c.JSON(http.StatusCreated, response)
 }
 
@@ -103,7 +89,7 @@ func deleteItem(c *gin.Context) {
 		return
 	}
 
-	delete(Items, id)
+	Inventory.delete(id)
 
 	c.JSON(http.StatusNoContent, nil)
 }
@@ -117,8 +103,7 @@ func alterQuantity(c *gin.Context) {
 	}
 
 	var request DeltaRequest
-	err := c.BindJSON(&request)
-	if err != nil {
+	if err := c.BindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, NewError("Request body is not valid JSON."))
 		return
 	}
@@ -128,16 +113,10 @@ func alterQuantity(c *gin.Context) {
 	}
 
 	var dQuantity = *request.QuantityDelta
-	var item = Items[id]
-	switch {
-	case dQuantity < 0:
-		if uint(-dQuantity) > item.Quantity {
-			c.JSON(http.StatusConflict, NewError("Quantity is too small to perform the operation."))
-			return
-		}
-		item.Quantity -= uint(-dQuantity)
-	default:
-		item.Quantity += uint(dQuantity)
+	item, errResponse := Inventory.alterQuantity(id, dQuantity)
+	if errResponse != nil {
+		c.JSON(http.StatusConflict, errResponse)
+		return
 	}
 
 	c.JSON(http.StatusOK, item)
@@ -150,7 +129,7 @@ func getId(c *gin.Context) (uint, int, *ErrorResponse) {
 	if err != nil {
 		return 0, http.StatusBadRequest, new(NewError("Invalid item ID."))
 	}
-	_, exists := Items[uint(id)]
+	exists := Inventory.itemExists(uint(id))
 	if !exists {
 		return 0, http.StatusNotFound, new(NewError("Item ID does not exist."))
 	}

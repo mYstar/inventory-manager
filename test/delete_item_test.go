@@ -10,9 +10,9 @@ import (
 )
 
 func TestDeleteItem(t *testing.T) {
-	originalItems := maps.Clone(api.Items)
-	t.Cleanup(func() { api.Items = originalItems })
-	api.Items[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 1}
+	originalItems := maps.Clone(api.Inventory)
+	t.Cleanup(func() { api.Inventory = originalItems })
+	api.Inventory[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 1}
 
 	response := sendTestRequest("DELETE", "/item/1", "")
 

@@ -10,9 +10,9 @@ import (
 )
 
 func TestAddToQuantity(t *testing.T) {
-	originalItems := maps.Clone(api.Items)
-	t.Cleanup(func() { api.Items = originalItems })
-	api.Items[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 1}
+	originalItems := maps.Clone(api.Inventory)
+	t.Cleanup(func() { api.Inventory = originalItems })
+	api.Inventory[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 1}
 	request := api.DeltaRequest{QuantityDelta: new(3)}
 	requestJson, _ := json.Marshal(request)
 
@@ -25,9 +25,9 @@ func TestAddToQuantity(t *testing.T) {
 }
 
 func TestSubtractFromQuantity(t *testing.T) {
-	originalItems := maps.Clone(api.Items)
-	t.Cleanup(func() { api.Items = originalItems })
-	api.Items[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 5}
+	originalItems := maps.Clone(api.Inventory)
+	t.Cleanup(func() { api.Inventory = originalItems })
+	api.Inventory[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 5}
 	request := api.DeltaRequest{QuantityDelta: new(-3)}
 	requestJson, _ := json.Marshal(request)
 
@@ -40,9 +40,9 @@ func TestSubtractFromQuantity(t *testing.T) {
 }
 
 func TestSubtractUnderflow(t *testing.T) {
-	originalItems := maps.Clone(api.Items)
-	t.Cleanup(func() { api.Items = originalItems })
-	api.Items[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 5}
+	originalItems := maps.Clone(api.Inventory)
+	t.Cleanup(func() { api.Inventory = originalItems })
+	api.Inventory[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 5}
 	request := api.DeltaRequest{QuantityDelta: new(-7)}
 	requestJson, _ := json.Marshal(request)
 
@@ -73,9 +73,9 @@ func TestAlterInvalidId(t *testing.T) {
 }
 
 func TestAlterInvalidBody(t *testing.T) {
-	originalItems := maps.Clone(api.Items)
-	t.Cleanup(func() { api.Items = originalItems })
-	api.Items[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 1}
+	originalItems := maps.Clone(api.Inventory)
+	t.Cleanup(func() { api.Inventory = originalItems })
+	api.Inventory[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 1}
 
 	response := sendTestRequest("PATCH", "/item/1", "{")
 
@@ -86,9 +86,9 @@ func TestAlterInvalidBody(t *testing.T) {
 }
 
 func TestAlterMissingDelta(t *testing.T) {
-	originalItems := maps.Clone(api.Items)
-	t.Cleanup(func() { api.Items = originalItems })
-	api.Items[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 1}
+	originalItems := maps.Clone(api.Inventory)
+	t.Cleanup(func() { api.Inventory = originalItems })
+	api.Inventory[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 1}
 
 	response := sendTestRequest("PATCH", "/item/1", "{}")
 

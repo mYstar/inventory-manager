@@ -10,8 +10,8 @@ import (
 )
 
 func TestCreateItem(t *testing.T) {
-	originalItems := maps.Clone(api.Items)
-	t.Cleanup(func() { api.Items = originalItems })
+	originalItems := maps.Clone(api.Inventory)
+	t.Cleanup(func() { api.Inventory = originalItems })
 	testItem := api.Item{
 		Name:     "Book",
 		Price:    10.99,
@@ -34,13 +34,13 @@ func TestCreateItem(t *testing.T) {
 }
 
 func TestCreateItemExistingValues(t *testing.T) {
-	originalItems := maps.Clone(api.Items)
-	t.Cleanup(func() { api.Items = originalItems })
+	originalItems := maps.Clone(api.Inventory)
+	t.Cleanup(func() { api.Inventory = originalItems })
 
 	initialItems := make(map[uint]api.Item)
 	initialItems[1] = api.Item{Name: "Book", Price: 10.99, Quantity: 1}
 	initialItems[3] = api.Item{Name: "Laptop", Price: 1099.00, Quantity: 3}
-	api.Items = maps.Clone(initialItems)
+	api.Inventory = maps.Clone(initialItems)
 
 	testItem := api.Item{
 		Name:     "Sofa",
