@@ -18,9 +18,9 @@ func initTestRouter() *gin.Engine {
 	router := api.SetupRoutes()
 	truncateInventory(router)
 
-	sendTestRequest(router, "POST", "/item", `{"name": "Book", "price": 10.99, "quantity": 1}`)
-	sendTestRequest(router, "POST", "/item", `{"name": "Chair", "price": 24.89, "quantity": 4}`)
-	sendTestRequest(router, "POST", "/item", `{"name": "Laptop", "price": 1099.00, "quantity": 3}`)
+	sendTestRequest(router, "POST", "/item", `{"name": "Book", "price_cents": 1099, "quantity": 1}`)
+	sendTestRequest(router, "POST", "/item", `{"name": "Chair", "price_cents": 2489, "quantity": 4}`)
+	sendTestRequest(router, "POST", "/item", `{"name": "Laptop", "price_cents": 109900, "quantity": 3}`)
 
 	return router
 }

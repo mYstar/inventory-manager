@@ -18,8 +18,8 @@ func TestDeleteItem(t *testing.T) {
 
 	// test if item is actually deleted
 	expected := db.Items{
-		2: db.Item{Name: "Chair", Price: 24.89, Quantity: 4},
-		3: db.Item{Name: "Laptop", Price: 1099.00, Quantity: 3},
+		2: db.Item{Name: "Chair", PriceCents: 2489, Quantity: 4},
+		3: db.Item{Name: "Laptop", PriceCents: 109900, Quantity: 3},
 	}
 	assertInventoryEquals(t, router, expected)
 }

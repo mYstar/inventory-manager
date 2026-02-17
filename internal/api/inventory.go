@@ -9,12 +9,12 @@ type Inventory struct {
 	persistence db.InventoryPersistence
 }
 
-func (inventory Inventory) calculateValue(ids []uint) float32 {
-	sum := float32(0.0)
+func (inventory Inventory) calculateValue(ids []uint) int64 {
+	sum := int64(0)
 	isEmptyQuery := ids == nil
 	for id, item := range inventory.persistence.GetItems() {
 		if isEmptyQuery || slices.Contains(ids, id) {
-			sum += item.Price * float32(item.Quantity)
+			sum += item.PriceCents * item.Quantity
 		}
 	}
 
@@ -31,18 +31,13 @@ func (inventory Inventory) delete(id uint) {
 	inventory.persistence.DeleteItem(id)
 }
 
-func (inventory Inventory) alterQuantity(id uint, dQuantity int) (*db.Item, *ErrorResponse) {
+func (inventory Inventory) alterQuantity(id uint, dQuantity int64) (*db.Item, *ErrorResponse) {
 	var item, _ = inventory.persistence.GetItem(id)
-	switch {
-	case dQuantity < 0:
-		if uint(-dQuantity) > item.Quantity {
-
-			return nil, new(NewError("Quantity is too small to perform the operation."))
-		}
-		item.Quantity -= uint(-dQuantity)
-	default:
-		item.Quantity += uint(dQuantity)
+	newQuantity := item.Quantity + dQuantity
+	if newQuantity < 0 {
+		return nil, new(NewError("Quantity is too small to perform the operation."))
 	}
+	item.Quantity = newQuantity
 	inventory.persistence.SetItem(id, item)
 
 	return &item, nil

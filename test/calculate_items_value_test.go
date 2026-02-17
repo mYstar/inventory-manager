@@ -18,7 +18,7 @@ func TestCalculateItemsValue(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, true, value.Success)
-	assert.Equal(t, float32(3307.99), value.Value)
+	assert.Equal(t, int64(330799), value.ValueCents)
 }
 
 func TestCalculateMissingIds(t *testing.T) {
@@ -31,7 +31,7 @@ func TestCalculateMissingIds(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, true, value.Success)
-	assert.Equal(t, float32(0.0), value.Value)
+	assert.Equal(t, int64(0), value.ValueCents)
 }
 
 func TestCalculateInvalidIds(t *testing.T) {

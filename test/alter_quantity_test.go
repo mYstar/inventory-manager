@@ -11,12 +11,12 @@ import (
 
 func TestAddToQuantity(t *testing.T) {
 	router := initTestRouter()
-	request := api.DeltaRequest{QuantityDelta: new(3)}
+	request := api.DeltaRequest{QuantityDelta: new(int64(3))}
 	requestJson, _ := json.Marshal(request)
 
 	response := sendTestRequest(router, "PATCH", "/item/1", string(requestJson))
 
-	expected := db.Item{Name: "Book", Price: 10.99, Quantity: 4}
+	expected := db.Item{Name: "Book", PriceCents: 1099, Quantity: 4}
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())
@@ -24,12 +24,12 @@ func TestAddToQuantity(t *testing.T) {
 
 func TestSubtractFromQuantity(t *testing.T) {
 	router := initTestRouter()
-	request := api.DeltaRequest{QuantityDelta: new(-3)}
+	request := api.DeltaRequest{QuantityDelta: new(int64(-3))}
 	requestJson, _ := json.Marshal(request)
 
 	response := sendTestRequest(router, "PATCH", "/item/2", string(requestJson))
 
-	expected := db.Item{Name: "Chair", Price: 24.89, Quantity: 1}
+	expected := db.Item{Name: "Chair", PriceCents: 2489, Quantity: 1}
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())
@@ -37,7 +37,7 @@ func TestSubtractFromQuantity(t *testing.T) {
 
 func TestSubtractUnderflow(t *testing.T) {
 	router := initTestRouter()
-	request := api.DeltaRequest{QuantityDelta: new(-7)}
+	request := api.DeltaRequest{QuantityDelta: new(int64(-7))}
 	requestJson, _ := json.Marshal(request)
 
 	response := sendTestRequest(router, "PATCH", "/item/1", string(requestJson))

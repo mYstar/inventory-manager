@@ -18,7 +18,7 @@ func TestCalculateTotalValue(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, true, value.Success)
-	assert.Equal(t, float32(3407.55), value.Value)
+	assert.Equal(t, int64(340755), value.ValueCents)
 }
 
 func TestCalculateTotalValueEmpty(t *testing.T) {
@@ -31,5 +31,5 @@ func TestCalculateTotalValueEmpty(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, true, value.Success)
-	assert.Equal(t, float32(0.0), value.Value)
+	assert.Equal(t, int64(0), value.ValueCents)
 }

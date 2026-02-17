@@ -9,7 +9,7 @@ import (
 )
 
 type DeltaRequest struct {
-	QuantityDelta *int `json:"quantity_delta"`
+	QuantityDelta *int64 `json:"quantity_delta"`
 }
 
 type IdsQuery struct {
@@ -17,15 +17,15 @@ type IdsQuery struct {
 }
 
 type ItemResponse struct {
-	ID       uint    `json:"id"`
-	Name     string  `json:"name"`
-	Price    float32 `json:"price"`
-	Quantity uint    `json:"quantity"`
+	ID         uint   `json:"id"`
+	Name       string `json:"name"`
+	PriceCents int64  `json:"price_cents"`
+	Quantity   int64  `json:"quantity"`
 }
 
 type ValueResponse struct {
-	Success bool    `json:"success"`
-	Value   float32 `json:"value"`
+	Success    bool  `json:"success"`
+	ValueCents int64 `json:"value_cents"`
 }
 
 type ErrorResponse struct {
@@ -60,7 +60,7 @@ func getItemsValue(c *gin.Context) {
 
 	value := inventory.calculateValue(query.Ids)
 
-	response := ValueResponse{Success: true, Value: value}
+	response := ValueResponse{Success: true, ValueCents: value}
 	c.JSON(http.StatusOK, response)
 }
 
@@ -72,7 +72,7 @@ func createItem(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, NewError("Request body is not valid JSON."))
 		return
 	}
-	isInvalid := item.Name == "" || item.Price == 0 || item.Quantity == 0
+	isInvalid := item.Name == "" || item.PriceCents == 0 || item.Quantity == 0
 	if isInvalid {
 		c.JSON(http.StatusBadRequest, NewError("Missing item data."))
 		return
@@ -80,7 +80,7 @@ func createItem(c *gin.Context) {
 
 	newIdx, newItem := inventory.createItem(item)
 
-	response := ItemResponse{ID: newIdx, Name: newItem.Name, Price: newItem.Price, Quantity: newItem.Quantity}
+	response := ItemResponse{ID: newIdx, Name: newItem.Name, PriceCents: newItem.PriceCents, Quantity: newItem.Quantity}
 	c.JSON(http.StatusCreated, response)
 }
 
