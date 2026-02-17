@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 func initTestRouter() *gin.Engine {
@@ -46,4 +48,12 @@ func sendTestRequest(router *gin.Engine, method, url, body string) *httptest.Res
 	router.ServeHTTP(w, req)
 
 	return w
+}
+
+func assertInventoryEquals(t *testing.T, router *gin.Engine, expectedItems db.Items) {
+	response := sendTestRequest(router, "GET", "/items", "")
+	expectedJson, _ := json.Marshal(expectedItems)
+
+	assert.Equal(t, 200, response.Code)
+	assert.Equal(t, string(expectedJson), response.Body.String())
 }

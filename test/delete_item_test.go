@@ -3,6 +3,7 @@ package test
 import (
 	"encoding/json"
 	"inventory_manager/internal/api"
+	"inventory_manager/internal/db"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,7 +16,12 @@ func TestDeleteItem(t *testing.T) {
 	assert.Equal(t, 204, response.Code)
 	assert.Equal(t, "", response.Body.String())
 
-	// TODO test if item is actually deleted
+	// test if item is actually deleted
+	expected := db.Items{
+		2: db.Item{Name: "Chair", Price: 24.89, Quantity: 4},
+		3: db.Item{Name: "Laptop", Price: 1099.00, Quantity: 3},
+	}
+	assertInventoryEquals(t, router, expected)
 }
 
 func TestDeleteUnknownItem(t *testing.T) {

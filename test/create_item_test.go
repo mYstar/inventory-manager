@@ -30,6 +30,10 @@ func TestCreateItem(t *testing.T) {
 	assert.Equal(t, testItem.Name, createdItem.Name)
 	assert.Equal(t, testItem.Quantity, createdItem.Quantity)
 	assert.Equal(t, testItem.Price, createdItem.Price)
+
+	// check if the new item is in the inventory
+	expected := db.Items{1: testItem}
+	assertInventoryEquals(t, router, expected)
 }
 
 func TestCreateItemExistingValues(t *testing.T) {
@@ -57,14 +61,12 @@ func TestCreateItemExistingValues(t *testing.T) {
 	assert.Equal(t, testItem.Price, createdItem.Price)
 
 	// check if the new item is in the inventory
-	response = sendTestRequest(router, "GET", "/items", "")
-
-	// TODO fix this test
-	//initialItems := maps.NewMap[uint, db.Item]()
-	//initialItems[4] = testItem
-	//expected, _ := json.Marshal(initialItems)
-	//assert.Equal(t, 200, response.Code)
-	//assert.Equal(t, string(expected), response.Body.String())
+	expected := db.Items{
+		1: db.Item{Name: "Book", Price: 10.99, Quantity: 1},
+		3: db.Item{Name: "Laptop", Price: 1099.00, Quantity: 3},
+		4: testItem,
+	}
+	assertInventoryEquals(t, router, expected)
 }
 
 func TestCreateItemWithInvalidJson(t *testing.T) {

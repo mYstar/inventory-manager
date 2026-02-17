@@ -1,6 +1,7 @@
 package test
 
 import (
+	"inventory_manager/internal/db"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,12 +9,13 @@ import (
 
 func TestGetItems(t *testing.T) {
 	router := initTestRouter()
-	response := sendTestRequest(router, "GET", "/items", "")
+	expected := db.Items{
+		1: {Name: "Book", Price: 10.99, Quantity: 1},
+		2: {Name: "Chair", Price: 24.89, Quantity: 4},
+		3: {Name: "Laptop", Price: 1099.00, Quantity: 3},
+	}
 
-	// TODO fix this test
-	//	expected, _ := json.Marshal(api.Inventory)
-	assert.Equal(t, 200, response.Code)
-	//	assert.Equal(t, string(expected), response.Body.String())
+	assertInventoryEquals(t, router, expected)
 }
 
 func TestGetEmptyItems(t *testing.T) {
