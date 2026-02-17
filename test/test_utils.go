@@ -15,7 +15,9 @@ import (
 )
 
 func initTestRouter() *gin.Engine {
-	router := api.SetupRoutes()
+	inventory := api.NewInventory(db.NewMemoryPersistence())
+	router := gin.Default()
+	api.SetupRoutes(router, inventory)
 	truncateInventory(router)
 
 	sendTestRequest(router, "POST", "/item", `{"name": "Book", "price_cents": 1099, "quantity": 1}`)
@@ -26,7 +28,9 @@ func initTestRouter() *gin.Engine {
 }
 
 func initTestRouterEmpty() *gin.Engine {
-	router := api.SetupRoutes()
+	inventory := api.NewInventory(db.NewMemoryPersistence())
+	router := gin.Default()
+	api.SetupRoutes(router, inventory)
 	truncateInventory(router)
 
 	return router

@@ -9,6 +9,10 @@ type Inventory struct {
 	persistence db.InventoryPersistence
 }
 
+func NewInventory(persistence db.InventoryPersistence) Inventory {
+	return Inventory{persistence: persistence}
+}
+
 func (inventory Inventory) calculateValue(ids []uint) int64 {
 	sum := int64(0)
 	isEmptyQuery := ids == nil

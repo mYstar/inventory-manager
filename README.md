@@ -13,6 +13,10 @@ REST API server to manage inventory items.
 - server is accepting requests on port 8080
   - example: `curl localhost:8080/items`
 
+### testing
+
+TODO
+
 ## configuration
 
 - API server port can be configured via `API_PORT` environment variable

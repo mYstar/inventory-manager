@@ -8,50 +8,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type DeltaRequest struct {
-	QuantityDelta *int64 `json:"quantity_delta"`
-}
-
-type IdsQuery struct {
-	Ids []uint `form:"ids"`
-}
-
-type ItemResponse struct {
-	ID         uint   `json:"id"`
-	Name       string `json:"name"`
-	PriceCents int64  `json:"price_cents"`
-	Quantity   int64  `json:"quantity"`
-}
-
-type ValueResponse struct {
-	Success    bool  `json:"success"`
-	ValueCents int64 `json:"value_cents"`
-}
-
-type ErrorResponse struct {
-	Success bool   `json:"success"`
-	Error   string `json:"error"`
-}
-
-var inventory = Inventory{persistence: db.NewMemoryPersistence()}
-
-func SetupRoutes() *gin.Engine {
-	router := gin.Default()
-	router.GET("/items", getItems)
-	router.GET("/items/value", getItemsValue)
-	router.POST("/item", createItem)
-	router.PATCH("/item/:id", alterQuantity)
-	router.DELETE("/item/:id", deleteItem)
-	return router
+func SetupRoutes(router *gin.Engine, inventory Inventory) {
+	router.GET("/items", func(c *gin.Context) { getItems(c, inventory) })
+	router.GET("/items/value", func(c *gin.Context) { getItemsValue(c, inventory) })
+	router.POST("/item", func(c *gin.Context) { createItem(c, inventory) })
+	router.PATCH("/item/:id", func(c *gin.Context) { alterQuantity(c, inventory) })
+	router.DELETE("/item/:id", func(c *gin.Context) { deleteItem(c, inventory) })
 }
 
 // getItems responds with the list of all albums as JSON.
-func getItems(c *gin.Context) {
+func getItems(c *gin.Context, inventory Inventory) {
 	c.JSON(http.StatusOK, inventory.persistence.GetItems())
 }
 
 // getItemsValue responds with the value sum of the given Items or all Items if no Item IDs are given in the request body.
-func getItemsValue(c *gin.Context) {
+func getItemsValue(c *gin.Context, inventory Inventory) {
 	query := IdsQuery{}
 	if err := c.ShouldBindQuery(&query); err != nil {
 		c.JSON(http.StatusBadRequest, NewError("One or more of given ids cannot be interpreted as uint."))
@@ -65,7 +36,7 @@ func getItemsValue(c *gin.Context) {
 }
 
 // createItem creates a new item and adds it to the inventory.
-func createItem(c *gin.Context) {
+func createItem(c *gin.Context, inventory Inventory) {
 	var item db.Item
 	err := c.BindJSON(&item)
 	if err != nil {
@@ -85,8 +56,8 @@ func createItem(c *gin.Context) {
 }
 
 // deleteItem deletes an item from the inventory.
-func deleteItem(c *gin.Context) {
-	id, httpCode, errResponse := getId(c)
+func deleteItem(c *gin.Context, inventory Inventory) {
+	id, httpCode, errResponse := getId(c, inventory)
 	if errResponse != nil {
 		c.JSON(httpCode, errResponse)
 		return
@@ -98,8 +69,8 @@ func deleteItem(c *gin.Context) {
 }
 
 // alterQuantity deletes an item from the inventory.
-func alterQuantity(c *gin.Context) {
-	id, httpCode, errResponse := getId(c)
+func alterQuantity(c *gin.Context, inventory Inventory) {
+	id, httpCode, errResponse := getId(c, inventory)
 	if errResponse != nil {
 		c.JSON(httpCode, errResponse)
 		return
@@ -127,7 +98,7 @@ func alterQuantity(c *gin.Context) {
 
 // getId extracts and validates the "id" parameter from the request.
 // returns the item ID or an error if the id can't be parsed or does not exist.
-func getId(c *gin.Context) (uint, int, *ErrorResponse) {
+func getId(c *gin.Context, inventory Inventory) (uint, int, *ErrorResponse) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		return 0, http.StatusBadRequest, new(NewError("Invalid item ID."))
