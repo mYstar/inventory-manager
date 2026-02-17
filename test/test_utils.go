@@ -1,14 +1,46 @@
 package test
 
 import (
+	"encoding/json"
+	"fmt"
 	"inventory_manager/internal/api"
+	"inventory_manager/internal/db"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
-func sendTestRequest(method, url, body string) *httptest.ResponseRecorder {
+func initTestRouter() *gin.Engine {
 	router := api.SetupRoutes()
+	truncateInventory(router)
+
+	sendTestRequest(router, "POST", "/item", `{"name": "Book", "price": 10.99, "quantity": 1}`)
+	sendTestRequest(router, "POST", "/item", `{"name": "Chair", "price": 24.89, "quantity": 4}`)
+	sendTestRequest(router, "POST", "/item", `{"name": "Laptop", "price": 1099.00, "quantity": 3}`)
+
+	return router
+}
+
+func initTestRouterEmpty() *gin.Engine {
+	router := api.SetupRoutes()
+	truncateInventory(router)
+
+	return router
+}
+
+func truncateInventory(router *gin.Engine) {
+	itemsResponse := sendTestRequest(router, "GET", "/items", "")
+	var items = db.Items{}
+	_ = json.Unmarshal([]byte(itemsResponse.Body.String()), &items)
+
+	for id := range items {
+		sendTestRequest(router, "DELETE", fmt.Sprintf("/item/%d", id), "")
+	}
+}
+
+func sendTestRequest(router *gin.Engine, method, url, body string) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest(method, url, strings.NewReader(body))
 	router.ServeHTTP(w, req)

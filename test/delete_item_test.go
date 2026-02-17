@@ -3,25 +3,24 @@ package test
 import (
 	"encoding/json"
 	"inventory_manager/internal/api"
-	"maps"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDeleteItem(t *testing.T) {
-	originalItems := maps.Clone(api.Inventory)
-	t.Cleanup(func() { api.Inventory = originalItems })
-	api.Inventory[1] = api.Item{Name: "Book", Price: 12.99, Quantity: 1}
-
-	response := sendTestRequest("DELETE", "/item/1", "")
+	router := initTestRouter()
+	response := sendTestRequest(router, "DELETE", "/item/1", "")
 
 	assert.Equal(t, 204, response.Code)
 	assert.Equal(t, "", response.Body.String())
+
+	// TODO test if item is actually deleted
 }
 
 func TestDeleteUnknownItem(t *testing.T) {
-	response := sendTestRequest("DELETE", "/item/1", "")
+	router := initTestRouterEmpty()
+	response := sendTestRequest(router, "DELETE", "/item/1", "")
 
 	expected := api.NewError("Item ID does not exist.")
 	expectedJson, _ := json.Marshal(expected)
@@ -30,7 +29,8 @@ func TestDeleteUnknownItem(t *testing.T) {
 }
 
 func TestDeleteInvalidId(t *testing.T) {
-	response := sendTestRequest("DELETE", "/item/invalid", "")
+	router := initTestRouter()
+	response := sendTestRequest(router, "DELETE", "/item/invalid", "")
 
 	expected := api.NewError("Invalid item ID.")
 	expectedJson, _ := json.Marshal(expected)

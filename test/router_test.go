@@ -7,6 +7,7 @@ import (
 )
 
 func Test404(t *testing.T) {
-	response := sendTestRequest("GET", "/not-existing", "")
+	router := initTestRouter()
+	response := sendTestRequest(router, "GET", "/not-existing", "")
 	assert.Equal(t, 404, response.Code)
 }

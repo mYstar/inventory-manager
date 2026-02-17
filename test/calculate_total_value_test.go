@@ -3,23 +3,14 @@ package test
 import (
 	"encoding/json"
 	"inventory_manager/internal/api"
-	"maps"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCalculateTotalValue(t *testing.T) {
-	originalItems := maps.Clone(api.Inventory)
-	t.Cleanup(func() { api.Inventory = originalItems })
-
-	testItems := make(map[uint]api.Item)
-	testItems[1] = api.Item{Name: "Book", Price: 10.99, Quantity: 1}
-	testItems[2] = api.Item{Name: "Chair", Price: 24.89, Quantity: 4}
-	testItems[3] = api.Item{Name: "Laptop", Price: 1099.00, Quantity: 3}
-	api.Inventory = testItems
-
-	response := sendTestRequest("GET", "/items/value", "")
+	router := initTestRouter()
+	response := sendTestRequest(router, "GET", "/items/value", "")
 
 	value := api.ValueResponse{}
 	err := json.Unmarshal([]byte(response.Body.String()), &value)
@@ -31,7 +22,8 @@ func TestCalculateTotalValue(t *testing.T) {
 }
 
 func TestCalculateTotalValueEmpty(t *testing.T) {
-	response := sendTestRequest("GET", "/items/value", "")
+	router := initTestRouterEmpty()
+	response := sendTestRequest(router, "GET", "/items/value", "")
 
 	value := api.ValueResponse{}
 	err := json.Unmarshal([]byte(response.Body.String()), &value)

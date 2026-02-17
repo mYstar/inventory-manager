@@ -1,6 +1,7 @@
 package api
 
 import (
+	"inventory_manager/internal/db"
 	"net/http"
 	"strconv"
 
@@ -32,6 +33,8 @@ type ErrorResponse struct {
 	Error   string `json:"error"`
 }
 
+var inventory = Inventory{persistence: db.NewMemoryPersistence()}
+
 func SetupRoutes() *gin.Engine {
 	router := gin.Default()
 	router.GET("/items", getItems)
@@ -44,7 +47,7 @@ func SetupRoutes() *gin.Engine {
 
 // getItems responds with the list of all albums as JSON.
 func getItems(c *gin.Context) {
-	c.JSON(http.StatusOK, Inventory)
+	c.JSON(http.StatusOK, inventory.persistence.GetItems())
 }
 
 // getItemsValue responds with the value sum of the given Items or all Items if no Item IDs are given in the request body.
@@ -55,7 +58,7 @@ func getItemsValue(c *gin.Context) {
 		return
 	}
 
-	value := Inventory.calculateValue(query.Ids)
+	value := inventory.calculateValue(query.Ids)
 
 	response := ValueResponse{Success: true, Value: value}
 	c.JSON(http.StatusOK, response)
@@ -63,7 +66,7 @@ func getItemsValue(c *gin.Context) {
 
 // createItem creates a new item and adds it to the inventory.
 func createItem(c *gin.Context) {
-	var item Item
+	var item db.Item
 	err := c.BindJSON(&item)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, NewError("Request body is not valid JSON."))
@@ -75,7 +78,7 @@ func createItem(c *gin.Context) {
 		return
 	}
 
-	newIdx, newItem := Inventory.createItem(item)
+	newIdx, newItem := inventory.createItem(item)
 
 	response := ItemResponse{ID: newIdx, Name: newItem.Name, Price: newItem.Price, Quantity: newItem.Quantity}
 	c.JSON(http.StatusCreated, response)
@@ -89,7 +92,7 @@ func deleteItem(c *gin.Context) {
 		return
 	}
 
-	Inventory.delete(id)
+	inventory.delete(id)
 
 	c.JSON(http.StatusNoContent, nil)
 }
@@ -113,7 +116,7 @@ func alterQuantity(c *gin.Context) {
 	}
 
 	var dQuantity = *request.QuantityDelta
-	item, errResponse := Inventory.alterQuantity(id, dQuantity)
+	item, errResponse := inventory.alterQuantity(id, dQuantity)
 	if errResponse != nil {
 		c.JSON(http.StatusConflict, errResponse)
 		return
@@ -129,7 +132,7 @@ func getId(c *gin.Context) (uint, int, *ErrorResponse) {
 	if err != nil {
 		return 0, http.StatusBadRequest, new(NewError("Invalid item ID."))
 	}
-	exists := Inventory.itemExists(uint(id))
+	exists := inventory.itemExists(uint(id))
 	if !exists {
 		return 0, http.StatusNotFound, new(NewError("Item ID does not exist."))
 	}
