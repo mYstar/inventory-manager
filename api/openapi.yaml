@@ -166,11 +166,11 @@ components:
         1:
           name: 'Table'
           quantity: 10
-          price: 119.99
+          price_cents: 119.99
         2:
           name: 'Chair'
           quantity: 5
-          price: 29.99
+          price_cents: 29.99
 
     Item:
       type: object
@@ -184,10 +184,10 @@ components:
           format: int64
           example: 10
           description: The current quantity of the inventory item.
-        price:
+        price_cents:
           type: number
-          format: double
-          example: 119.99
+          format: int64
+          example: 11999
           description: The monetary value of the inventory item in euro.
 
     ResultItem:
@@ -206,10 +206,10 @@ components:
           format: int64
           example: 10
           description: The current quantity of the inventory item.
-        price:
+        price_cents:
           type: number
-          format: double
-          example: 119.99
+          format: int64
+          example: 11999
           description: The monetary value of the inventory item in euro.
 
     Delta:

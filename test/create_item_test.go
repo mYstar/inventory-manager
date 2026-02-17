@@ -81,7 +81,7 @@ func TestCreateItemWithInvalidJson(t *testing.T) {
 
 func TestCreateItemWithMissingValues(t *testing.T) {
 	router := initTestRouter()
-	response := sendTestRequest(router, "POST", "/item", "{\"name\": \"Book\", \"price\": 10.99}")
+	response := sendTestRequest(router, "POST", "/item", "{\"name\": \"Book\", \"price_cents\": 1099}")
 
 	expected := api.NewError("Missing item data.")
 	expectedJson, _ := json.Marshal(expected)

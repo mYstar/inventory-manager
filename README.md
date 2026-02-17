@@ -2,6 +2,11 @@
 
 REST API server to manage inventory items.
 
+## requirements
+
+- installed [docker engine 17.05+](https://docs.docker.com/get-docker/)
+- installed [docker compose v2](https://docs.docker.com/compose/install/)
+
 ## usage
 
 - `docker compose -f docker/docker-compose.yml up`
@@ -22,7 +27,7 @@ These are defined in `api/openapi.yaml`. Overview:
 - `GET /items/value`: calculate the total value of all items in the inventory
 - `GET /items/value?id=1&id=2`: calculate the total value the given items
 - `POST /item`: add an item to the inventory
-  - body: `{"name": "Table", "quantity": 10, "price": 119.99}`
+  - body: `{"name": "Table", "quantity": 10, "price_cents": 11999}`
 - `PATCH /item/1`: alter the quantity of the item with the given id
   - body: `{"quantity_delta": -5}`
 - `DELETE /item/1`: remove the item with the given id from the inventory
