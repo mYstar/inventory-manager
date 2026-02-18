@@ -10,11 +10,11 @@ type SqlitePersistence struct {
 	db *sql.DB
 }
 
-func NewSqlitePersistence() SqlitePersistence {
+func NewSqlitePersistence() (*SqlitePersistence, error) {
 
 	db, err := sql.Open("sqlite", "data/default.db")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// This ensures the table exists every time the app starts
@@ -27,17 +27,18 @@ func NewSqlitePersistence() SqlitePersistence {
 	);`
 	_, err = db.Exec(initQuery)
 	if err != nil {
-		panic(err)
+		_ = db.Close()
+		return nil, err
 	}
 
-	return SqlitePersistence{db}
+	return new(SqlitePersistence{db}), nil
 }
 
-func (memory SqlitePersistence) GetItems() Items {
+func (memory SqlitePersistence) GetItems() (Items, error) {
 	getAllQuery := "SELECT * FROM inventory"
 	rows, err := memory.db.Query(getAllQuery)
 	if err != nil {
-		panic(err)
+		return Items{}, err
 	}
 	defer rows.Close()
 
@@ -47,57 +48,58 @@ func (memory SqlitePersistence) GetItems() Items {
 		item := Item{}
 		err = rows.Scan(&id, &item.Name, &item.Quantity, &item.PriceCents)
 		if err != nil {
-			panic(err)
+			return Items{}, err
 		}
 		items[id] = item
 	}
 
-	return items
+	return items, nil
 }
 
-func (memory SqlitePersistence) GetItem(id uint) (Item, bool) {
+func (memory SqlitePersistence) GetItem(id uint) (Item, bool, error) {
 	getQuery := "SELECT name, quantity, price_cents FROM inventory WHERE id = ?"
 	rows, err := memory.db.Query(getQuery, id)
 	if err != nil {
-		panic(err)
+		return Item{}, false, err
 	}
 	defer rows.Close()
 
-	rows.Next()
+	exists := rows.Next()
+	if !exists {
+		return Item{}, false, nil
+	}
 	var item Item
 	err = rows.Scan(&item.Name, &item.Quantity, &item.PriceCents)
 	if err != nil {
-		panic(err)
+		return Item{}, false, err
 	}
-	return item, true
+	return item, true, nil
 }
 
-func (memory SqlitePersistence) AddItem(item Item) uint {
+func (memory SqlitePersistence) AddItem(item Item) (uint, error) {
 	setQuery := "INSERT INTO inventory (name, quantity, price_cents) VALUES (?, ?, ?)"
 	result, err := memory.db.Exec(setQuery, item.Name, item.Quantity, item.PriceCents)
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 
 	newId, err := result.LastInsertId()
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
-	return uint(newId)
+	return uint(newId), nil
 }
 
-func (memory SqlitePersistence) DeleteItem(id uint) {
+func (memory SqlitePersistence) DeleteItem(id uint) error {
 	deleteQuery := "DELETE FROM inventory WHERE id = ?"
 	_, err := memory.db.Exec(deleteQuery, id)
-	if err != nil {
-		panic(err)
-	}
+
+	return err
 }
 
-func (memory SqlitePersistence) SetItem(id uint, item Item) {
+func (memory SqlitePersistence) SetItem(id uint, item Item) error {
 	setQuery := "UPDATE inventory SET name = ?, quantity = ?, price_cents = ? WHERE id = ?"
 	_, err := memory.db.Exec(setQuery, item.Name, item.Quantity, item.PriceCents, id)
-	if err != nil {
-		panic(err)
-	}
+
+	return err
 }

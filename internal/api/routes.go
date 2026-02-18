@@ -18,7 +18,12 @@ func SetupRoutes(router *gin.Engine, inventory Inventory) {
 
 // getItems responds with the list of all albums as JSON.
 func getItems(c *gin.Context, inventory Inventory) {
-	c.JSON(http.StatusOK, inventory.persistence.GetItems())
+	items, err := inventory.persistence.GetItems()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, NewError("Internal server error: "+err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, items)
 }
 
 // getItemsValue responds with the value sum of the given Items or all Items if no Item IDs are given in the request body.
@@ -29,7 +34,11 @@ func getItemsValue(c *gin.Context, inventory Inventory) {
 		return
 	}
 
-	value := inventory.calculateValue(query.Ids)
+	value, err := inventory.calculateValue(query.Ids)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, NewError("Internal server error: "+err.Error()))
+		return
+	}
 
 	response := ValueResponse{Success: true, ValueCents: value}
 	c.JSON(http.StatusOK, response)
@@ -49,7 +58,11 @@ func createItem(c *gin.Context, inventory Inventory) {
 		return
 	}
 
-	newIdx, newItem := inventory.createItem(item)
+	newIdx, newItem, err := inventory.createItem(item)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, NewError("Internal server error: "+err.Error()))
+		return
+	}
 
 	response := ItemResponse{ID: newIdx, Name: newItem.Name, PriceCents: newItem.PriceCents, Quantity: newItem.Quantity}
 	c.JSON(http.StatusCreated, response)
@@ -63,7 +76,11 @@ func deleteItem(c *gin.Context, inventory Inventory) {
 		return
 	}
 
-	inventory.delete(id)
+	err := inventory.delete(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, NewError("Internal server error: "+err.Error()))
+		return
+	}
 
 	c.JSON(http.StatusNoContent, nil)
 }
@@ -87,9 +104,9 @@ func alterQuantity(c *gin.Context, inventory Inventory) {
 	}
 
 	var dQuantity = *request.QuantityDelta
-	item, errResponse := inventory.alterQuantity(id, dQuantity)
-	if errResponse != nil {
-		c.JSON(http.StatusConflict, errResponse)
+	item, err := inventory.alterQuantity(id, dQuantity)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, NewError("Internal server error: "+err.Error()))
 		return
 	}
 

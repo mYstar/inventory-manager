@@ -9,9 +9,9 @@ type Item struct {
 type Items map[uint]Item
 
 type InventoryPersistence interface {
-	GetItems() Items
-	GetItem(uint) (Item, bool)
-	AddItem(item Item) uint
-	SetItem(uint, Item)
-	DeleteItem(uint)
+	GetItems() (Items, error)
+	GetItem(uint) (Item, bool, error)
+	AddItem(item Item) (uint, error)
+	SetItem(uint, Item) error
+	DeleteItem(uint) error
 }
