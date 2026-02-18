@@ -1,9 +1,8 @@
-package test
+package api
 
 import (
 	"encoding/json"
-	"inventory_manager/internal/api"
-	"inventory_manager/internal/db"
+	"inventory_manager/internal/storage"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,7 +10,7 @@ import (
 
 func TestCreateItem(t *testing.T) {
 	router := initTestRouterEmpty()
-	testItem := db.Item{
+	testItem := storage.Item{
 		Name:       "Book",
 		PriceCents: 1099,
 		Quantity:   1,
@@ -21,7 +20,7 @@ func TestCreateItem(t *testing.T) {
 	response := sendTestRequest(router, "POST", "/item", string(testItemJson))
 
 	createdItemJson := response.Body.String()
-	createdItem := api.ItemResponse{}
+	createdItem := ItemResponse{}
 	err := json.Unmarshal([]byte(createdItemJson), &createdItem)
 
 	assert.Nil(t, err)
@@ -32,14 +31,14 @@ func TestCreateItem(t *testing.T) {
 	assert.Equal(t, testItem.PriceCents, createdItem.PriceCents)
 
 	// check if the new item is in the inventory
-	expected := db.Items{1: testItem}
+	expected := storage.Items{1: testItem}
 	assertInventoryEquals(t, router, expected)
 }
 
 func TestCreateItemExistingValues(t *testing.T) {
 	router := initTestRouter()
 	response := sendTestRequest(router, "DELETE", "/item/2", "")
-	testItem := db.Item{
+	testItem := storage.Item{
 		Name:       "Sofa",
 		PriceCents: 50999,
 		Quantity:   3,
@@ -50,7 +49,7 @@ func TestCreateItemExistingValues(t *testing.T) {
 	response = sendTestRequest(router, "POST", "/item", string(testItemJson))
 
 	createdItemJson := response.Body.String()
-	createdItem := api.ItemResponse{}
+	createdItem := ItemResponse{}
 	err := json.Unmarshal([]byte(createdItemJson), &createdItem)
 
 	assert.Nil(t, err)
@@ -61,9 +60,9 @@ func TestCreateItemExistingValues(t *testing.T) {
 	assert.Equal(t, testItem.PriceCents, createdItem.PriceCents)
 
 	// check if the new item is in the inventory
-	expected := db.Items{
-		1: db.Item{Name: "Book", PriceCents: 1099, Quantity: 1},
-		3: db.Item{Name: "Laptop", PriceCents: 109900, Quantity: 3},
+	expected := storage.Items{
+		1: storage.Item{Name: "Book", PriceCents: 1099, Quantity: 1},
+		3: storage.Item{Name: "Laptop", PriceCents: 109900, Quantity: 3},
 		4: testItem,
 	}
 	assertInventoryEquals(t, router, expected)
@@ -73,7 +72,7 @@ func TestCreateItemWithInvalidJson(t *testing.T) {
 	router := initTestRouter()
 	response := sendTestRequest(router, "POST", "/item", "{")
 
-	expected := api.NewError("Request body is not valid JSON.")
+	expected := NewError("Request body is not valid JSON.")
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 400, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())
@@ -83,7 +82,7 @@ func TestCreateItemWithMissingValues(t *testing.T) {
 	router := initTestRouter()
 	response := sendTestRequest(router, "POST", "/item", "{\"name\": \"Book\", \"price_cents\": 1099}")
 
-	expected := api.NewError("Missing item data.")
+	expected := NewError("Missing item data.")
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 400, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())
@@ -93,7 +92,7 @@ func TestCreateItemWithNegativeQuantity(t *testing.T) {
 	router := initTestRouter()
 	response := sendTestRequest(router, "POST", "/item", "{\"name\": \"Book\", \"price_cents\": 1099, \"quantity\": -1}")
 
-	expected := api.NewError("Quantity cannot be negative.")
+	expected := NewError("Quantity cannot be negative.")
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 400, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())

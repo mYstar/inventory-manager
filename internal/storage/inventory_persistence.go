@@ -1,4 +1,4 @@
-package db
+package storage
 
 // Item represents a single item in the inventory.
 type Item struct {

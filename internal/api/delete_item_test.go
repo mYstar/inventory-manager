@@ -1,9 +1,8 @@
-package test
+package api
 
 import (
 	"encoding/json"
-	"inventory_manager/internal/api"
-	"inventory_manager/internal/db"
+	"inventory_manager/internal/storage"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,9 +16,9 @@ func TestDeleteItem(t *testing.T) {
 	assert.Equal(t, "", response.Body.String())
 
 	// test if item is actually deleted
-	expected := db.Items{
-		2: db.Item{Name: "Chair", PriceCents: 2489, Quantity: 4},
-		3: db.Item{Name: "Laptop", PriceCents: 109900, Quantity: 3},
+	expected := storage.Items{
+		2: storage.Item{Name: "Chair", PriceCents: 2489, Quantity: 4},
+		3: storage.Item{Name: "Laptop", PriceCents: 109900, Quantity: 3},
 	}
 	assertInventoryEquals(t, router, expected)
 }
@@ -28,7 +27,7 @@ func TestDeleteUnknownItem(t *testing.T) {
 	router := initTestRouterEmpty()
 	response := sendTestRequest(router, "DELETE", "/item/1", "")
 
-	expected := api.NewError("Item ID does not exist.")
+	expected := NewError("Item ID does not exist.")
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 404, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())
@@ -38,7 +37,7 @@ func TestDeleteInvalidId(t *testing.T) {
 	router := initTestRouter()
 	response := sendTestRequest(router, "DELETE", "/item/invalid", "")
 
-	expected := api.NewError("Invalid item ID.")
+	expected := NewError("Invalid item ID.")
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 400, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())

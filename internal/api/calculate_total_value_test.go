@@ -1,8 +1,7 @@
-package test
+package api
 
 import (
 	"encoding/json"
-	"inventory_manager/internal/api"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,7 +11,7 @@ func TestCalculateTotalValue(t *testing.T) {
 	router := initTestRouter()
 	response := sendTestRequest(router, "GET", "/items/value", "")
 
-	value := api.ValueResponse{}
+	value := ValueResponse{}
 	err := json.Unmarshal([]byte(response.Body.String()), &value)
 
 	assert.Nil(t, err)
@@ -25,7 +24,7 @@ func TestCalculateTotalValueEmpty(t *testing.T) {
 	router := initTestRouterEmpty()
 	response := sendTestRequest(router, "GET", "/items/value", "")
 
-	value := api.ValueResponse{}
+	value := ValueResponse{}
 	err := json.Unmarshal([]byte(response.Body.String()), &value)
 
 	assert.Nil(t, err)

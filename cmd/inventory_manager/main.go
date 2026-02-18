@@ -2,7 +2,7 @@ package main
 
 import (
 	"inventory_manager/internal/api"
-	"inventory_manager/internal/db"
+	"inventory_manager/internal/storage"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +11,7 @@ import (
 // main initializes the application and starts the HTTP server.
 func main() {
 	dbFile := os.Getenv("DB_FILE")
-	database, err := db.NewSqlitePersistence(dbFile)
+	database, err := storage.NewSqlitePersistence(dbFile)
 	if err != nil {
 		panic(err)
 	}

@@ -1,9 +1,8 @@
-package test
+package api
 
 import (
 	"encoding/json"
-	"inventory_manager/internal/api"
-	"inventory_manager/internal/db"
+	"inventory_manager/internal/storage"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,12 +10,12 @@ import (
 
 func TestAddToQuantity(t *testing.T) {
 	router := initTestRouter()
-	request := api.DeltaRequest{QuantityDelta: new(int64(3))}
+	request := DeltaRequest{QuantityDelta: new(int64(3))}
 	requestJson, _ := json.Marshal(request)
 
 	response := sendTestRequest(router, "PATCH", "/item/1", string(requestJson))
 
-	expected := db.Item{Name: "Book", PriceCents: 1099, Quantity: 4}
+	expected := storage.Item{Name: "Book", PriceCents: 1099, Quantity: 4}
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())
@@ -24,12 +23,12 @@ func TestAddToQuantity(t *testing.T) {
 
 func TestSubtractFromQuantity(t *testing.T) {
 	router := initTestRouter()
-	request := api.DeltaRequest{QuantityDelta: new(int64(-3))}
+	request := DeltaRequest{QuantityDelta: new(int64(-3))}
 	requestJson, _ := json.Marshal(request)
 
 	response := sendTestRequest(router, "PATCH", "/item/2", string(requestJson))
 
-	expected := db.Item{Name: "Chair", PriceCents: 2489, Quantity: 1}
+	expected := storage.Item{Name: "Chair", PriceCents: 2489, Quantity: 1}
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())
@@ -37,12 +36,12 @@ func TestSubtractFromQuantity(t *testing.T) {
 
 func TestSubtractUnderflow(t *testing.T) {
 	router := initTestRouter()
-	request := api.DeltaRequest{QuantityDelta: new(int64(-7))}
+	request := DeltaRequest{QuantityDelta: new(int64(-7))}
 	requestJson, _ := json.Marshal(request)
 
 	response := sendTestRequest(router, "PATCH", "/item/1", string(requestJson))
 
-	expected := api.NewError("Internal server error: quantity is too small to perform the operation")
+	expected := NewError("Internal server error: quantity is too small to perform the operation")
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 500, response.Code) // TODO: better expect a 409
 	assert.Equal(t, string(expectedJson), response.Body.String())
@@ -52,7 +51,7 @@ func TestAlterUnknownItem(t *testing.T) {
 	router := initTestRouterEmpty()
 	response := sendTestRequest(router, "PATCH", "/item/1", "{}")
 
-	expected := api.NewError("Item ID does not exist.")
+	expected := NewError("Item ID does not exist.")
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 404, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())
@@ -62,7 +61,7 @@ func TestAlterInvalidId(t *testing.T) {
 	router := initTestRouterEmpty()
 	response := sendTestRequest(router, "PATCH", "/item/unknown", "{}")
 
-	expected := api.NewError("Invalid item ID.")
+	expected := NewError("Invalid item ID.")
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 400, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())
@@ -72,7 +71,7 @@ func TestAlterInvalidBody(t *testing.T) {
 	router := initTestRouter()
 	response := sendTestRequest(router, "PATCH", "/item/1", "{")
 
-	expected := api.NewError("Request body is not valid JSON.")
+	expected := NewError("Request body is not valid JSON.")
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 400, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())
@@ -82,7 +81,7 @@ func TestAlterMissingDelta(t *testing.T) {
 	router := initTestRouter()
 	response := sendTestRequest(router, "PATCH", "/item/1", "{}")
 
-	expected := api.NewError("Request body does not contain required fields.")
+	expected := NewError("Request body does not contain required fields.")
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 400, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())

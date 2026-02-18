@@ -2,17 +2,17 @@ package api
 
 import (
 	"errors"
-	"inventory_manager/internal/db"
+	"inventory_manager/internal/storage"
 	"slices"
 )
 
 // Inventory represents the inventory system that manages items using the provided persistence layer.
 type Inventory struct {
-	persistence db.InventoryPersistence
+	persistence storage.InventoryPersistence
 }
 
 // NewInventory returns a new Inventory instance using the provided persistence layer.
-func NewInventory(persistence db.InventoryPersistence) Inventory {
+func NewInventory(persistence storage.InventoryPersistence) Inventory {
 	return Inventory{persistence: persistence}
 }
 
@@ -34,14 +34,14 @@ func (inventory Inventory) calculateValue(ids []uint) (int64, error) {
 
 // createItem adds a new item to the inventory.
 // Returns ID, the new item, or an error if adding or retrieving fails.
-func (inventory Inventory) createItem(item db.Item) (uint, db.Item, error) {
+func (inventory Inventory) createItem(item storage.Item) (uint, storage.Item, error) {
 	newIdx, err := inventory.persistence.AddItem(item)
 	if err != nil {
-		return 0, db.Item{}, err
+		return 0, storage.Item{}, err
 	}
 	newItem, exists, err := inventory.persistence.GetItem(newIdx)
 	if !exists {
-		return 0, db.Item{}, errors.New("item not found after creation")
+		return 0, storage.Item{}, errors.New("item not found after creation")
 	}
 	return newIdx, newItem, err
 }
@@ -54,17 +54,17 @@ func (inventory Inventory) delete(id uint) error {
 
 // alterQuantity adjusts the quantity of an item in the inventory by the specified delta.
 // Returns the altered item or an error if the operation is invalid or fails.
-func (inventory Inventory) alterQuantity(id uint, dQuantity int64) (db.Item, error) {
+func (inventory Inventory) alterQuantity(id uint, dQuantity int64) (storage.Item, error) {
 	item, exists, err := inventory.persistence.GetItem(id)
 	if !exists {
-		return db.Item{}, errors.New("item id does not exist")
+		return storage.Item{}, errors.New("item id does not exist")
 	}
 	if err != nil {
-		return db.Item{}, err
+		return storage.Item{}, err
 	}
 	newQuantity := item.Quantity + dQuantity
 	if newQuantity < 0 {
-		return db.Item{}, errors.New("quantity is too small to perform the operation")
+		return storage.Item{}, errors.New("quantity is too small to perform the operation")
 	}
 	item.Quantity = newQuantity
 	err = inventory.persistence.UpdateItem(id, item)

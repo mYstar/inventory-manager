@@ -1,7 +1,7 @@
 package api
 
 import (
-	"inventory_manager/internal/db"
+	"inventory_manager/internal/storage"
 	"net/http"
 	"strconv"
 
@@ -17,7 +17,7 @@ func SetupRoutes(router *gin.Engine, inventory Inventory) {
 	router.DELETE("/item/:id", func(c *gin.Context) { deleteItem(c, inventory) })
 }
 
-// getItems responds with the list of all items in the inventory as JSON (type db.Items).
+// getItems responds with the list of all items in the inventory as JSON (type storage.Items).
 func getItems(c *gin.Context, inventory Inventory) {
 	items, err := inventory.persistence.GetItems()
 	if err != nil {
@@ -47,9 +47,9 @@ func getItemsValue(c *gin.Context, inventory Inventory) {
 	c.JSON(http.StatusOK, response)
 }
 
-// createItem creates a new item from the values in the request body (type db.Item) and adds it to the inventory.
+// createItem creates a new item from the values in the request body (type storage.Item) and adds it to the inventory.
 func createItem(c *gin.Context, inventory Inventory) {
-	var item db.Item
+	var item storage.Item
 	err := c.BindJSON(&item)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, NewError("Request body is not valid JSON."))

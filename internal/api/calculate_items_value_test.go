@@ -1,8 +1,7 @@
-package test
+package api
 
 import (
 	"encoding/json"
-	"inventory_manager/internal/api"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,7 +11,7 @@ func TestCalculateItemsValue(t *testing.T) {
 	router := initTestRouter()
 	response := sendTestRequest(router, "GET", "/items/value?ids=1&ids=3", "")
 
-	value := api.ValueResponse{}
+	value := ValueResponse{}
 	err := json.Unmarshal([]byte(response.Body.String()), &value)
 
 	assert.Nil(t, err)
@@ -25,7 +24,7 @@ func TestCalculateMissingIds(t *testing.T) {
 	router := initTestRouterEmpty()
 	response := sendTestRequest(router, "GET", "/items/value?ids=1&ids=2&ids=3", "")
 
-	value := api.ValueResponse{}
+	value := ValueResponse{}
 	err := json.Unmarshal([]byte(response.Body.String()), &value)
 
 	assert.Nil(t, err)
@@ -38,7 +37,7 @@ func TestCalculateInvalidIds(t *testing.T) {
 	router := initTestRouter()
 	response := sendTestRequest(router, "GET", "/items/value?ids=a&ids=2&ids=c", "")
 
-	value := api.ErrorResponse{}
+	value := ErrorResponse{}
 	err := json.Unmarshal([]byte(response.Body.String()), &value)
 
 	assert.Nil(t, err)
@@ -52,7 +51,7 @@ func TestCalculateNegativeItemsValue(t *testing.T) {
 	sendTestRequest(router, "POST", "/item", `{"name": "Voucher", "price_cents": -1000, "quantity": 1}`)
 	response := sendTestRequest(router, "GET", "/items/value?ids=1&ids=4", "")
 
-	value := api.ValueResponse{}
+	value := ValueResponse{}
 	err := json.Unmarshal([]byte(response.Body.String()), &value)
 
 	assert.Nil(t, err)

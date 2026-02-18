@@ -1,4 +1,4 @@
-package db
+package storage
 
 // MemoryPersistence provides in-memory storage for items, facilitating operations on an `Items` collection.
 // The data of this persistence provider is not persisted across restarts.

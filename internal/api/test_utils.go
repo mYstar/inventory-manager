@@ -1,9 +1,8 @@
-package test
+package api
 
 import (
 	"encoding/json"
-	"inventory_manager/internal/api"
-	"inventory_manager/internal/db"
+	"inventory_manager/internal/storage"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -15,9 +14,9 @@ import (
 
 // initTestRouter initializes the test router and fills the inventory with sample data.
 func initTestRouter() *gin.Engine {
-	inventory := api.NewInventory(db.NewMemoryPersistence())
+	inventory := NewInventory(storage.NewMemoryPersistence())
 	router := gin.Default()
-	api.SetupRoutes(router, inventory)
+	SetupRoutes(router, inventory)
 
 	sendTestRequest(router, "POST", "/item", `{"name": "Book", "price_cents": 1099, "quantity": 1}`)
 	sendTestRequest(router, "POST", "/item", `{"name": "Chair", "price_cents": 2489, "quantity": 4}`)
@@ -28,9 +27,9 @@ func initTestRouter() *gin.Engine {
 
 // initTestRouterEmpty initializes a router with an empty inventory.
 func initTestRouterEmpty() *gin.Engine {
-	inventory := api.NewInventory(db.NewMemoryPersistence())
+	inventory := NewInventory(storage.NewMemoryPersistence())
 	router := gin.Default()
-	api.SetupRoutes(router, inventory)
+	SetupRoutes(router, inventory)
 
 	return router
 }
@@ -45,7 +44,7 @@ func sendTestRequest(router *gin.Engine, method, url, body string) *httptest.Res
 }
 
 // assertInventoryEquals checks if the inventory of the router matches the expected items.
-func assertInventoryEquals(t *testing.T, router *gin.Engine, expectedItems db.Items) {
+func assertInventoryEquals(t *testing.T, router *gin.Engine, expectedItems storage.Items) {
 	response := sendTestRequest(router, "GET", "/items", "")
 	expectedJson, _ := json.Marshal(expectedItems)
 
