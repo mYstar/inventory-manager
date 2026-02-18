@@ -3,12 +3,14 @@ package main
 import (
 	"inventory_manager/internal/api"
 	"inventory_manager/internal/db"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	database, err := db.NewSqlitePersistence()
+	dbFile := os.Getenv("DB_FILE")
+	database, err := db.NewSqlitePersistence(dbFile)
 	if err != nil {
 		panic(err)
 	}

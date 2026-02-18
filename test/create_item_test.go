@@ -88,3 +88,13 @@ func TestCreateItemWithMissingValues(t *testing.T) {
 	assert.Equal(t, 400, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())
 }
+
+func TestCreateItemWithNegativeQuantity(t *testing.T) {
+	router := initTestRouter()
+	response := sendTestRequest(router, "POST", "/item", "{\"name\": \"Book\", \"price_cents\": 1099, \"quantity\": -1}")
+
+	expected := api.NewError("Quantity cannot be negative.")
+	expectedJson, _ := json.Marshal(expected)
+	assert.Equal(t, 400, response.Code)
+	assert.Equal(t, string(expectedJson), response.Body.String())
+}

@@ -10,9 +10,9 @@ type SqlitePersistence struct {
 	db *sql.DB
 }
 
-func NewSqlitePersistence() (*SqlitePersistence, error) {
+func NewSqlitePersistence(dbFile string) (*SqlitePersistence, error) {
 
-	db, err := sql.Open("sqlite", "data/default.db")
+	db, err := sql.Open("sqlite", "data/"+dbFile)
 	if err != nil {
 		return nil, err
 	}

@@ -57,6 +57,10 @@ func createItem(c *gin.Context, inventory Inventory) {
 		c.JSON(http.StatusBadRequest, NewError("Missing item data."))
 		return
 	}
+	if item.Quantity < 0 {
+		c.JSON(http.StatusBadRequest, NewError("Quantity cannot be negative."))
+		return
+	}
 
 	newIdx, newItem, err := inventory.createItem(item)
 	if err != nil {

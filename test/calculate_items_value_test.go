@@ -46,3 +46,17 @@ func TestCalculateInvalidIds(t *testing.T) {
 	assert.Equal(t, false, value.Success)
 	assert.Equal(t, "One or more of given ids cannot be interpreted as uint.", value.Error)
 }
+
+func TestCalculateNegativeItemsValue(t *testing.T) {
+	router := initTestRouter()
+	sendTestRequest(router, "POST", "/item", `{"name": "Voucher", "price_cents": -1000, "quantity": 1}`)
+	response := sendTestRequest(router, "GET", "/items/value?ids=1&ids=4", "")
+
+	value := api.ValueResponse{}
+	err := json.Unmarshal([]byte(response.Body.String()), &value)
+
+	assert.Nil(t, err)
+	assert.Equal(t, 200, response.Code)
+	assert.Equal(t, true, value.Success)
+	assert.Equal(t, int64(99), value.ValueCents)
+}

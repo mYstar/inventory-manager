@@ -3,6 +3,8 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+    environment:
+      - DB_FILE=${DB_FILE}
     ports:
       - "${API_PORT}:80"
     volumes:

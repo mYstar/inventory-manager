@@ -33,7 +33,10 @@ func (inventory Inventory) createItem(item db.Item) (uint, db.Item, error) {
 	if err != nil {
 		return 0, db.Item{}, err
 	}
-	newItem, _, err := inventory.persistence.GetItem(newIdx)
+	newItem, exists, err := inventory.persistence.GetItem(newIdx)
+	if !exists {
+		return 0, db.Item{}, errors.New("item not found after creation")
+	}
 	return newIdx, newItem, err
 }
 
@@ -42,7 +45,10 @@ func (inventory Inventory) delete(id uint) error {
 }
 
 func (inventory Inventory) alterQuantity(id uint, dQuantity int64) (db.Item, error) {
-	var item, _, err = inventory.persistence.GetItem(id)
+	item, exists, err := inventory.persistence.GetItem(id)
+	if !exists {
+		return db.Item{}, errors.New("item id does not exist")
+	}
 	if err != nil {
 		return db.Item{}, err
 	}
