@@ -2,7 +2,6 @@ package test
 
 import (
 	"encoding/json"
-	"fmt"
 	"inventory_manager/internal/api"
 	"inventory_manager/internal/db"
 	"net/http"
@@ -14,11 +13,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// initTestRouter initializes the test router and fills the inventory with sample data.
 func initTestRouter() *gin.Engine {
 	inventory := api.NewInventory(db.NewMemoryPersistence())
 	router := gin.Default()
 	api.SetupRoutes(router, inventory)
-	truncateInventory(router)
 
 	sendTestRequest(router, "POST", "/item", `{"name": "Book", "price_cents": 1099, "quantity": 1}`)
 	sendTestRequest(router, "POST", "/item", `{"name": "Chair", "price_cents": 2489, "quantity": 4}`)
@@ -27,25 +26,16 @@ func initTestRouter() *gin.Engine {
 	return router
 }
 
+// initTestRouterEmpty initializes a router with an empty inventory.
 func initTestRouterEmpty() *gin.Engine {
 	inventory := api.NewInventory(db.NewMemoryPersistence())
 	router := gin.Default()
 	api.SetupRoutes(router, inventory)
-	truncateInventory(router)
 
 	return router
 }
 
-func truncateInventory(router *gin.Engine) {
-	itemsResponse := sendTestRequest(router, "GET", "/items", "")
-	var items = db.Items{}
-	_ = json.Unmarshal([]byte(itemsResponse.Body.String()), &items)
-
-	for id := range items {
-		sendTestRequest(router, "DELETE", fmt.Sprintf("/item/%d", id), "")
-	}
-}
-
+// sendTestRequest sends a request to the router and returns the response.
 func sendTestRequest(router *gin.Engine, method, url, body string) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest(method, url, strings.NewReader(body))
@@ -54,6 +44,7 @@ func sendTestRequest(router *gin.Engine, method, url, body string) *httptest.Res
 	return w
 }
 
+// assertInventoryEquals checks if the inventory of the router matches the expected items.
 func assertInventoryEquals(t *testing.T, router *gin.Engine, expectedItems db.Items) {
 	response := sendTestRequest(router, "GET", "/items", "")
 	expectedJson, _ := json.Marshal(expectedItems)

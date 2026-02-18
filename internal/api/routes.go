@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// SetupRoutes defines API endpoints for inventory management, attaching handlers for inventory operations.
 func SetupRoutes(router *gin.Engine, inventory Inventory) {
 	router.GET("/items", func(c *gin.Context) { getItems(c, inventory) })
 	router.GET("/items/value", func(c *gin.Context) { getItemsValue(c, inventory) })
@@ -16,7 +17,7 @@ func SetupRoutes(router *gin.Engine, inventory Inventory) {
 	router.DELETE("/item/:id", func(c *gin.Context) { deleteItem(c, inventory) })
 }
 
-// getItems responds with the list of all albums as JSON.
+// getItems responds with the list of all items in the inventory as JSON (type db.Items).
 func getItems(c *gin.Context, inventory Inventory) {
 	items, err := inventory.persistence.GetItems()
 	if err != nil {
@@ -26,7 +27,9 @@ func getItems(c *gin.Context, inventory Inventory) {
 	c.JSON(http.StatusOK, items)
 }
 
-// getItemsValue responds with the value sum of the given Items or all Items if no Item IDs are given in the request body.
+// getItemsValue responds with the total value of a list of Items (type ValueResponse).
+// If a list of ids is given via an URL query the items of this list are summed up,
+// otherwise all Items in the inventory are used.
 func getItemsValue(c *gin.Context, inventory Inventory) {
 	query := IdsQuery{}
 	if err := c.ShouldBindQuery(&query); err != nil {
@@ -44,7 +47,7 @@ func getItemsValue(c *gin.Context, inventory Inventory) {
 	c.JSON(http.StatusOK, response)
 }
 
-// createItem creates a new item and adds it to the inventory.
+// createItem creates a new item from the values in the request body (type db.Item) and adds it to the inventory.
 func createItem(c *gin.Context, inventory Inventory) {
 	var item db.Item
 	err := c.BindJSON(&item)
@@ -72,7 +75,7 @@ func createItem(c *gin.Context, inventory Inventory) {
 	c.JSON(http.StatusCreated, response)
 }
 
-// deleteItem deletes an item from the inventory.
+// deleteItem deletes the item with the ID provided in the URL from the inventory.
 func deleteItem(c *gin.Context, inventory Inventory) {
 	id, httpCode, errResponse := getId(c, inventory)
 	if errResponse != nil {
@@ -89,7 +92,8 @@ func deleteItem(c *gin.Context, inventory Inventory) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-// alterQuantity deletes an item from the inventory.
+// alterQuantity adjusts the quantity of an inventory item with the ID provided in the URL
+// and delta from the HTTP request body (type DeltaRequest).
 func alterQuantity(c *gin.Context, inventory Inventory) {
 	id, httpCode, errResponse := getId(c, inventory)
 	if errResponse != nil {
@@ -117,7 +121,7 @@ func alterQuantity(c *gin.Context, inventory Inventory) {
 	c.JSON(http.StatusOK, item)
 }
 
-// getId extracts and validates the "id" parameter from the request.
+// getId extracts and validates the ID parameter from the URL.
 // returns the item ID or an error if the id can't be parsed or does not exist.
 func getId(c *gin.Context, inventory Inventory) (uint, int, *ErrorResponse) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -131,6 +135,7 @@ func getId(c *gin.Context, inventory Inventory) (uint, int, *ErrorResponse) {
 	return uint(id), 0, nil
 }
 
+// NewError creates a new ErrorResponse with the given message.
 func NewError(message string) ErrorResponse {
 	return ErrorResponse{Success: false, Error: message}
 }

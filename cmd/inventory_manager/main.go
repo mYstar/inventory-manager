@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// main initializes the application and starts the HTTP server.
 func main() {
 	dbFile := os.Getenv("DB_FILE")
 	database, err := db.NewSqlitePersistence(dbFile)

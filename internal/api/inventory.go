@@ -6,14 +6,18 @@ import (
 	"slices"
 )
 
+// Inventory represents the inventory system that manages items using the provided persistence layer.
 type Inventory struct {
 	persistence db.InventoryPersistence
 }
 
+// NewInventory returns a new Inventory instance using the provided persistence layer.
 func NewInventory(persistence db.InventoryPersistence) Inventory {
 	return Inventory{persistence: persistence}
 }
 
+// calculateValue calculates the value of the specified items or all items if the IDs list is nil.
+// Returns the total value in cents or 0.0 and an error if retrieving items fails.
 func (inventory Inventory) calculateValue(ids []uint) (int64, error) {
 	sum := int64(0)
 	isEmptyQuery := ids == nil
@@ -28,6 +32,8 @@ func (inventory Inventory) calculateValue(ids []uint) (int64, error) {
 	return sum, err
 }
 
+// createItem adds a new item to the inventory.
+// Returns ID, the new item, or an error if adding or retrieving fails.
 func (inventory Inventory) createItem(item db.Item) (uint, db.Item, error) {
 	newIdx, err := inventory.persistence.AddItem(item)
 	if err != nil {
@@ -40,10 +46,14 @@ func (inventory Inventory) createItem(item db.Item) (uint, db.Item, error) {
 	return newIdx, newItem, err
 }
 
+// delete removes an item from the inventory by its ID.
+// Returns an error if the operation fails.
 func (inventory Inventory) delete(id uint) error {
 	return inventory.persistence.DeleteItem(id)
 }
 
+// alterQuantity adjusts the quantity of an item in the inventory by the specified delta.
+// Returns the altered item or an error if the operation is invalid or fails.
 func (inventory Inventory) alterQuantity(id uint, dQuantity int64) (db.Item, error) {
 	item, exists, err := inventory.persistence.GetItem(id)
 	if !exists {
@@ -57,11 +67,13 @@ func (inventory Inventory) alterQuantity(id uint, dQuantity int64) (db.Item, err
 		return db.Item{}, errors.New("quantity is too small to perform the operation")
 	}
 	item.Quantity = newQuantity
-	err = inventory.persistence.SetItem(id, item)
+	err = inventory.persistence.UpdateItem(id, item)
 
 	return item, err
 }
 
+// itemExists checks whether an item with the specified ID exists in the inventory.
+// Returns true if the item exists, otherwise false.
 func (inventory Inventory) itemExists(id uint) bool {
 	_, exists, _ := inventory.persistence.GetItem(id)
 	return exists

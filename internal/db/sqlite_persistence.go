@@ -34,9 +34,9 @@ func NewSqlitePersistence(dbFile string) (*SqlitePersistence, error) {
 	return new(SqlitePersistence{db}), nil
 }
 
-func (memory SqlitePersistence) GetItems() (Items, error) {
+func (database SqlitePersistence) GetItems() (Items, error) {
 	getAllQuery := "SELECT * FROM inventory"
-	rows, err := memory.db.Query(getAllQuery)
+	rows, err := database.db.Query(getAllQuery)
 	if err != nil {
 		return Items{}, err
 	}
@@ -56,9 +56,9 @@ func (memory SqlitePersistence) GetItems() (Items, error) {
 	return items, nil
 }
 
-func (memory SqlitePersistence) GetItem(id uint) (Item, bool, error) {
+func (database SqlitePersistence) GetItem(id uint) (Item, bool, error) {
 	getQuery := "SELECT name, quantity, price_cents FROM inventory WHERE id = ?"
-	rows, err := memory.db.Query(getQuery, id)
+	rows, err := database.db.Query(getQuery, id)
 	if err != nil {
 		return Item{}, false, err
 	}
@@ -76,9 +76,9 @@ func (memory SqlitePersistence) GetItem(id uint) (Item, bool, error) {
 	return item, true, nil
 }
 
-func (memory SqlitePersistence) AddItem(item Item) (uint, error) {
+func (database SqlitePersistence) AddItem(item Item) (uint, error) {
 	setQuery := "INSERT INTO inventory (name, quantity, price_cents) VALUES (?, ?, ?)"
-	result, err := memory.db.Exec(setQuery, item.Name, item.Quantity, item.PriceCents)
+	result, err := database.db.Exec(setQuery, item.Name, item.Quantity, item.PriceCents)
 	if err != nil {
 		return 0, err
 	}
@@ -90,16 +90,16 @@ func (memory SqlitePersistence) AddItem(item Item) (uint, error) {
 	return uint(newId), nil
 }
 
-func (memory SqlitePersistence) DeleteItem(id uint) error {
+func (database SqlitePersistence) DeleteItem(id uint) error {
 	deleteQuery := "DELETE FROM inventory WHERE id = ?"
-	_, err := memory.db.Exec(deleteQuery, id)
+	_, err := database.db.Exec(deleteQuery, id)
 
 	return err
 }
 
-func (memory SqlitePersistence) SetItem(id uint, item Item) error {
+func (database SqlitePersistence) UpdateItem(id uint, item Item) error {
 	setQuery := "UPDATE inventory SET name = ?, quantity = ?, price_cents = ? WHERE id = ?"
-	_, err := memory.db.Exec(setQuery, item.Name, item.Quantity, item.PriceCents, id)
+	_, err := database.db.Exec(setQuery, item.Name, item.Quantity, item.PriceCents, id)
 
 	return err
 }

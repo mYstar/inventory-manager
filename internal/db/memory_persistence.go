@@ -1,9 +1,12 @@
 package db
 
+// MemoryPersistence provides in-memory storage for items, facilitating operations on an `Items` collection.
+// The data of this persistence provider is not persisted across restarts.
 type MemoryPersistence struct {
 	items Items
 }
 
+// NewMemoryPersistence returns a new MemoryPersistence instance.
 func NewMemoryPersistence() MemoryPersistence {
 	return MemoryPersistence{items: Items{}}
 }
@@ -35,7 +38,10 @@ func (memory MemoryPersistence) DeleteItem(id uint) error {
 	return nil
 }
 
-func (memory MemoryPersistence) SetItem(id uint, item Item) error {
-	memory.items[id] = item
+func (memory MemoryPersistence) UpdateItem(id uint, item Item) error {
+	_, exists := memory.items[id]
+	if exists {
+		memory.items[id] = item
+	}
 	return nil
 }
