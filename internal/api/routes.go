@@ -111,5 +111,5 @@ func getId(c *gin.Context, inventory Inventory) (uint, int, *ErrorResponse) {
 }
 
 func NewError(message string) ErrorResponse {
-	return ErrorResponse{Error: message}
+	return ErrorResponse{Success: false, Error: message}
 }

@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	inventory := api.NewInventory(db.NewMemoryPersistence())
+	inventory := api.NewInventory(db.NewSqlitePersistence())
 	router := gin.Default()
 	api.SetupRoutes(router, inventory)
 
