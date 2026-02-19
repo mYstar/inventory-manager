@@ -130,12 +130,12 @@ func alterQuantity(c *gin.Context, inventory *Inventory) {
 
 // getId extracts and validates the ID parameter from the URL.
 // returns the item ID or an error if the id can't be parsed or does not exist.
-func getId(c *gin.Context) (uint, int, *ErrorResponse) {
+func getId(c *gin.Context) (uint64, int, *ErrorResponse) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		return 0, http.StatusBadRequest, &ErrorResponse{Success: false, Error: "Invalid item ID."}
 	}
-	return uint(id), 0, nil
+	return uint64(id), 0, nil
 }
 
 // NewError creates a new ErrorResponse with the given message.

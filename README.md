@@ -2,37 +2,37 @@
 
 REST API server to manage inventory items.
 
-## requirements
+## Requirements
 
-- installed [docker engine 17.05+](https://docs.docker.com/get-docker/)
-- installed [docker compose v2](https://docs.docker.com/compose/install/)
+- [Docker Engine 17.05+](https://docs.docker.com/get-docker/)
+- [Docker Compose v2](https://docs.docker.com/compose/install/)
 
-## usage
+## Usage
 
 - `docker compose -f docker/docker-compose.yml up`
 - server is accepting requests on port 8080
   - example: `curl localhost:8080/items`
 
-### testing
+### Testing
 
 - to run all tests just use: `go test ./...`
 
-## configuration
+## Configuration
 
-- API server port can be configured via `API_PORT` environment variable
+- `API_PORT`: API server port (default: `8080`)
+  - set in `docker/.env`, or:
+  - `API_PORT=8081 docker compose -f docker/docker-compose.yml up`
+- `DB_FILE`: SQLite database filename (default: `default.db`)
   - in `docker/.env`
-  - or via: `API_PORT=8080 docker compose -f docker/docker-compose.yml up`
-- The filename of the sqlite database can be configured via `DB_FILE` environment variable
-  - in `docker/.env`
-  - or via: `DB_FILE=default.db docker compose -f docker/docker-compose.yml up`
+  - or via: `DB_FILE=inventory.db docker compose -f docker/docker-compose.yml up`
 
-## requests
+## Requests
 
 These are defined in `api/openapi.yaml`. Overview:
 
 - `GET /items`: get all items in the inventory
 - `GET /items/value`: calculate the total value of all items in the inventory
-- `GET /items/value?id=1&id=2`: calculate the total value the given items
+- `GET /items/value?ids=1&ids=2`: calculate the total value the given items
 - `POST /item`: add an item to the inventory
   - body: `{"name": "Table", "quantity": 10, "price_cents": 11999}`
 - `PATCH /item/1`: alter the quantity of the item with the given id

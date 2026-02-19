@@ -31,12 +31,12 @@ func NewSqlitePersistence(dbFile string) (*SqlitePersistence, error) {
 		return nil, err
 	}
 
-	return new(SqlitePersistence{db}), nil
+	return &SqlitePersistence{db}, nil
 }
 
-func (database SqlitePersistence) GetItems() (Items, error) {
+func (s *SqlitePersistence) GetItems() (Items, error) {
 	getAllQuery := "SELECT * FROM inventory"
-	rows, err := database.db.Query(getAllQuery)
+	rows, err := s.db.Query(getAllQuery)
 	if err != nil {
 		return Items{}, err
 	}
@@ -44,7 +44,7 @@ func (database SqlitePersistence) GetItems() (Items, error) {
 
 	items := Items{}
 	for rows.Next() {
-		id := uint(0)
+		id := uint64(0)
 		item := Item{}
 		err = rows.Scan(&id, &item.Name, &item.Quantity, &item.PriceCents)
 		if err != nil {
@@ -56,29 +56,21 @@ func (database SqlitePersistence) GetItems() (Items, error) {
 	return items, nil
 }
 
-func (database SqlitePersistence) GetItem(id uint) (Item, bool, error) {
+func (s *SqlitePersistence) GetItem(id uint64) (Item, bool, error) {
 	getQuery := "SELECT name, quantity, price_cents FROM inventory WHERE id = ?"
-	rows, err := database.db.Query(getQuery, id)
-	if err != nil {
-		return Item{}, false, err
-	}
-	defer rows.Close()
+	row := s.db.QueryRow(getQuery, id)
 
-	exists := rows.Next()
-	if !exists {
-		return Item{}, false, nil
-	}
 	var item Item
-	err = rows.Scan(&item.Name, &item.Quantity, &item.PriceCents)
+	err := row.Scan(&item.Name, &item.Quantity, &item.PriceCents)
 	if err != nil {
 		return Item{}, false, err
 	}
 	return item, true, nil
 }
 
-func (database SqlitePersistence) AddItem(item Item) (uint, error) {
+func (s *SqlitePersistence) AddItem(item Item) (uint64, error) {
 	setQuery := "INSERT INTO inventory (name, quantity, price_cents) VALUES (?, ?, ?)"
-	result, err := database.db.Exec(setQuery, item.Name, item.Quantity, item.PriceCents)
+	result, err := s.db.Exec(setQuery, item.Name, item.Quantity, item.PriceCents)
 	if err != nil {
 		return 0, err
 	}
@@ -87,19 +79,19 @@ func (database SqlitePersistence) AddItem(item Item) (uint, error) {
 	if err != nil {
 		return 0, err
 	}
-	return uint(newId), nil
+	return uint64(newId), nil
 }
 
-func (database SqlitePersistence) DeleteItem(id uint) error {
+func (s *SqlitePersistence) DeleteItem(id uint64) error {
 	deleteQuery := "DELETE FROM inventory WHERE id = ?"
-	_, err := database.db.Exec(deleteQuery, id)
+	_, err := s.db.Exec(deleteQuery, id)
 
 	return err
 }
 
-func (database SqlitePersistence) UpdateItem(id uint, item Item) error {
+func (s *SqlitePersistence) UpdateItem(id uint64, item Item) error {
 	setQuery := "UPDATE inventory SET name = ?, quantity = ?, price_cents = ? WHERE id = ?"
-	_, err := database.db.Exec(setQuery, item.Name, item.Quantity, item.PriceCents, id)
+	_, err := s.db.Exec(setQuery, item.Name, item.Quantity, item.PriceCents, id)
 
 	return err
 }

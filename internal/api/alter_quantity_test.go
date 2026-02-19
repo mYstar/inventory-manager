@@ -16,9 +16,11 @@ func TestAddToQuantity(t *testing.T) {
 	response := sendTestRequest(router, "PATCH", "/item/1", string(requestJson))
 
 	expected := storage.Item{Name: "Book", PriceCents: 1099, Quantity: 4}
-	expectedJson, _ := json.Marshal(expected)
+	var responseItem storage.Item
+	err := json.Unmarshal(response.Body.Bytes(), &responseItem)
+	assert.Nil(t, err)
 	assert.Equal(t, 200, response.Code)
-	assert.Equal(t, string(expectedJson), response.Body.String())
+	assert.Equal(t, expected, responseItem)
 }
 
 func TestSubtractFromQuantity(t *testing.T) {
@@ -29,9 +31,11 @@ func TestSubtractFromQuantity(t *testing.T) {
 	response := sendTestRequest(router, "PATCH", "/item/2", string(requestJson))
 
 	expected := storage.Item{Name: "Chair", PriceCents: 2489, Quantity: 1}
-	expectedJson, _ := json.Marshal(expected)
+	var responseItem storage.Item
+	err := json.Unmarshal(response.Body.Bytes(), &responseItem)
+	assert.Nil(t, err)
 	assert.Equal(t, 200, response.Code)
-	assert.Equal(t, string(expectedJson), response.Body.String())
+	assert.Equal(t, expected, responseItem)
 }
 
 func TestSubtractUnderflow(t *testing.T) {
@@ -42,9 +46,11 @@ func TestSubtractUnderflow(t *testing.T) {
 	response := sendTestRequest(router, "PATCH", "/item/1", string(requestJson))
 
 	expected := NewError("Current quantity is too small to perform the operation.")
-	expectedJson, _ := json.Marshal(expected)
+	var responseItem ErrorResponse
+	err := json.Unmarshal(response.Body.Bytes(), &responseItem)
+	assert.Nil(t, err)
 	assert.Equal(t, 409, response.Code)
-	assert.Equal(t, string(expectedJson), response.Body.String())
+	assert.Equal(t, expected, responseItem)
 }
 
 func TestAlterUnknownItem(t *testing.T) {
@@ -54,9 +60,11 @@ func TestAlterUnknownItem(t *testing.T) {
 	response := sendTestRequest(router, "PATCH", "/item/1", string(requestJson))
 
 	expected := NewError("Item ID does not exist.")
-	expectedJson, _ := json.Marshal(expected)
+	var responseItem ErrorResponse
+	err := json.Unmarshal(response.Body.Bytes(), &responseItem)
+	assert.Nil(t, err)
 	assert.Equal(t, 404, response.Code)
-	assert.Equal(t, string(expectedJson), response.Body.String())
+	assert.Equal(t, expected, responseItem)
 }
 
 func TestAlterInvalidId(t *testing.T) {
@@ -64,9 +72,11 @@ func TestAlterInvalidId(t *testing.T) {
 	response := sendTestRequest(router, "PATCH", "/item/unknown", "{}")
 
 	expected := NewError("Invalid item ID.")
-	expectedJson, _ := json.Marshal(expected)
+	var responseItem ErrorResponse
+	err := json.Unmarshal(response.Body.Bytes(), &responseItem)
+	assert.Nil(t, err)
 	assert.Equal(t, 400, response.Code)
-	assert.Equal(t, string(expectedJson), response.Body.String())
+	assert.Equal(t, expected, responseItem)
 }
 
 func TestAlterInvalidBody(t *testing.T) {
@@ -74,9 +84,11 @@ func TestAlterInvalidBody(t *testing.T) {
 	response := sendTestRequest(router, "PATCH", "/item/1", "{")
 
 	expected := NewError("Request body is not valid JSON.")
-	expectedJson, _ := json.Marshal(expected)
+	var responseItem ErrorResponse
+	err := json.Unmarshal(response.Body.Bytes(), &responseItem)
+	assert.Nil(t, err)
 	assert.Equal(t, 400, response.Code)
-	assert.Equal(t, string(expectedJson), response.Body.String())
+	assert.Equal(t, expected, responseItem)
 }
 
 func TestAlterMissingDelta(t *testing.T) {
@@ -84,7 +96,9 @@ func TestAlterMissingDelta(t *testing.T) {
 	response := sendTestRequest(router, "PATCH", "/item/1", "{}")
 
 	expected := NewError("Request body does not contain required fields.")
-	expectedJson, _ := json.Marshal(expected)
+	var responseItem ErrorResponse
+	err := json.Unmarshal(response.Body.Bytes(), &responseItem)
+	assert.Nil(t, err)
 	assert.Equal(t, 400, response.Code)
-	assert.Equal(t, string(expectedJson), response.Body.String())
+	assert.Equal(t, expected, responseItem)
 }

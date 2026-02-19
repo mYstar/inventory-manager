@@ -39,6 +39,8 @@ paths:
             type: array
             items:
               type: integer
+              format: int64
+              minimum: 0
           style: form
       responses:
         '200':
@@ -92,7 +94,8 @@ paths:
           schema:
             example: 1
             type: integer
-            format: uint64
+            format: int64
+            minimum: 0
       requestBody:
         content:
           application/json:
@@ -133,7 +136,8 @@ paths:
           schema:
             example: 1
             type: integer
-            format: uint64
+            format: int64
+            minimum: 0
       responses:
         '204':
           description: The item was deleted successfully.
@@ -166,11 +170,11 @@ components:
         1:
           name: 'Table'
           quantity: 10
-          price_cents: 119.99
+          price_cents: 11999
         2:
           name: 'Chair'
           quantity: 5
-          price_cents: 29.99
+          price_cents: 2999
 
     Item:
       type: object
@@ -185,16 +189,19 @@ components:
           example: 10
           description: The current quantity of the inventory item.
         price_cents:
-          type: number
+          type: integer
           format: int64
           example: 11999
           description: The monetary value of the inventory item in euro.
+      required: [name, quantity, price_cents]
 
     ResultItem:
       type: object
       properties:
         id:
           type: integer
+          format: int64
+          minimum: 0
           example: 1
           description: The ID of the inventory item.
         name:
@@ -207,7 +214,7 @@ components:
           example: 10
           description: The current quantity of the inventory item.
         price_cents:
-          type: number
+          type: integer
           format: int64
           example: 11999
           description: The monetary value of the inventory item in euro.
@@ -219,6 +226,7 @@ components:
           type: integer
           format: int64
           example: -5
+      required: [quantity_delta]
 
     Value:
       type: object
@@ -227,9 +235,9 @@ components:
           type: boolean
           example: true
         value:
-          type: number
-          format: float
-          example: 124.89
+          type: integer
+          format: int64
+          example: 124890
 
     Error:
       type: object

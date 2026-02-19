@@ -9,45 +9,45 @@ type MemoryPersistence struct {
 }
 
 // NewMemoryPersistence returns a new MemoryPersistence instance.
-func NewMemoryPersistence() MemoryPersistence {
-	return MemoryPersistence{items: Items{}}
+func NewMemoryPersistence() *MemoryPersistence {
+	return &MemoryPersistence{items: Items{}}
 }
 
-func (memory MemoryPersistence) GetItems() (Items, error) {
-	return memory.items, nil
+func (m *MemoryPersistence) GetItems() (Items, error) {
+	return m.items, nil
 }
 
-func (memory MemoryPersistence) GetItem(id uint) (Item, bool, error) {
-	item, exists := memory.items[id]
+func (m *MemoryPersistence) GetItem(id uint64) (Item, bool, error) {
+	item, exists := m.items[id]
 	return item, exists, nil
 }
 
-func (memory MemoryPersistence) AddItem(item Item) (uint, error) {
-	maxKey := uint(0)
-	for key := range memory.items {
+func (m *MemoryPersistence) AddItem(item Item) (uint64, error) {
+	maxKey := uint64(0)
+	for key := range m.items {
 		if key > maxKey {
 			maxKey = key
 		}
 	}
 	newIdx := maxKey + 1
-	memory.items[newIdx] = item
+	m.items[newIdx] = item
 
 	return newIdx, nil
 }
 
-func (memory MemoryPersistence) DeleteItem(id uint) error {
-	_, exists := memory.items[id]
+func (m *MemoryPersistence) DeleteItem(id uint64) error {
+	_, exists := m.items[id]
 	if !exists {
 		return errors.New("item id does not exist")
 	}
-	delete(memory.items, id)
+	delete(m.items, id)
 	return nil
 }
 
-func (memory MemoryPersistence) UpdateItem(id uint, item Item) error {
-	_, exists := memory.items[id]
+func (m *MemoryPersistence) UpdateItem(id uint64, item Item) error {
+	_, exists := m.items[id]
 	if exists {
-		memory.items[id] = item
+		m.items[id] = item
 	}
 	return nil
 }

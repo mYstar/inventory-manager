@@ -15,7 +15,8 @@ import (
 // initTestRouter initializes the test router and fills the inventory with sample data.
 func initTestRouter() *gin.Engine {
 	inventory := NewInventory(storage.NewMemoryPersistence())
-	router := gin.Default()
+	router := gin.New()
+	gin.SetMode(gin.TestMode)
 	SetupRoutes(router, inventory)
 
 	sendTestRequest(router, "POST", "/item", `{"name": "Book", "price_cents": 1099, "quantity": 1}`)
@@ -37,7 +38,10 @@ func initTestRouterEmpty() *gin.Engine {
 // sendTestRequest sends a request to the router and returns the response.
 func sendTestRequest(router *gin.Engine, method, url, body string) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(method, url, strings.NewReader(body))
+	req, err := http.NewRequest(method, url, strings.NewReader(body))
+	if err != nil {
+		panic(err)
+	}
 	router.ServeHTTP(w, req)
 
 	return w
@@ -46,8 +50,9 @@ func sendTestRequest(router *gin.Engine, method, url, body string) *httptest.Res
 // assertInventoryEquals checks if the inventory of the router matches the expected items.
 func assertInventoryEquals(t *testing.T, router *gin.Engine, expectedItems storage.Items) {
 	response := sendTestRequest(router, "GET", "/items", "")
-	expectedJson, _ := json.Marshal(expectedItems)
+	expectedJson, err := json.Marshal(expectedItems)
 
+	assert.Nil(t, err)
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())
 }

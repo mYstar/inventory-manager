@@ -28,9 +28,11 @@ func TestDeleteUnknownItem(t *testing.T) {
 	response := sendTestRequest(router, "DELETE", "/item/1", "")
 
 	expected := NewError("Item ID does not exist.")
-	expectedJson, _ := json.Marshal(expected)
+	var responseItem ErrorResponse
+	err := json.Unmarshal(response.Body.Bytes(), &responseItem)
+	assert.Nil(t, err)
 	assert.Equal(t, 404, response.Code)
-	assert.Equal(t, string(expectedJson), response.Body.String())
+	assert.Equal(t, expected, responseItem)
 }
 
 func TestDeleteInvalidId(t *testing.T) {
@@ -38,7 +40,9 @@ func TestDeleteInvalidId(t *testing.T) {
 	response := sendTestRequest(router, "DELETE", "/item/invalid", "")
 
 	expected := NewError("Invalid item ID.")
-	expectedJson, _ := json.Marshal(expected)
+	var responseItem ErrorResponse
+	err := json.Unmarshal(response.Body.Bytes(), &responseItem)
+	assert.Nil(t, err)
 	assert.Equal(t, 400, response.Code)
-	assert.Equal(t, string(expectedJson), response.Body.String())
+	assert.Equal(t, expected, responseItem)
 }

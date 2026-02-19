@@ -25,7 +25,7 @@ func TestCreateItem(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, 201, response.Code)
-	assert.Equal(t, uint(1), createdItem.ID)
+	assert.Equal(t, uint64(1), createdItem.ID)
 	assert.Equal(t, testItem.Name, createdItem.Name)
 	assert.Equal(t, testItem.Quantity, createdItem.Quantity)
 	assert.Equal(t, testItem.PriceCents, createdItem.PriceCents)
@@ -54,7 +54,7 @@ func TestCreateItemExistingValues(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.Equal(t, 201, response.Code)
-	assert.Equal(t, uint(4), createdItem.ID)
+	assert.Equal(t, uint64(4), createdItem.ID)
 	assert.Equal(t, testItem.Name, createdItem.Name)
 	assert.Equal(t, testItem.Quantity, createdItem.Quantity)
 	assert.Equal(t, testItem.PriceCents, createdItem.PriceCents)
@@ -73,9 +73,11 @@ func TestCreateItemWithInvalidJson(t *testing.T) {
 	response := sendTestRequest(router, "POST", "/item", "{")
 
 	expected := NewError("Request body invalid JSON or is missing required fields.")
-	expectedJson, _ := json.Marshal(expected)
+	var responseItem ErrorResponse
+	err := json.Unmarshal(response.Body.Bytes(), &responseItem)
+	assert.Nil(t, err)
 	assert.Equal(t, 400, response.Code)
-	assert.Equal(t, string(expectedJson), response.Body.String())
+	assert.Equal(t, expected, responseItem)
 }
 
 func TestCreateItemWithMissingValues(t *testing.T) {
@@ -83,9 +85,11 @@ func TestCreateItemWithMissingValues(t *testing.T) {
 	response := sendTestRequest(router, "POST", "/item", "{\"name\": \"Book\", \"price_cents\": 1099}")
 
 	expected := NewError("Request body invalid JSON or is missing required fields.")
-	expectedJson, _ := json.Marshal(expected)
+	var responseItem ErrorResponse
+	err := json.Unmarshal(response.Body.Bytes(), &responseItem)
+	assert.Nil(t, err)
 	assert.Equal(t, 400, response.Code)
-	assert.Equal(t, string(expectedJson), response.Body.String())
+	assert.Equal(t, expected, responseItem)
 }
 
 func TestCreateItemWithNegativeQuantity(t *testing.T) {
@@ -93,7 +97,9 @@ func TestCreateItemWithNegativeQuantity(t *testing.T) {
 	response := sendTestRequest(router, "POST", "/item", "{\"name\": \"Book\", \"price_cents\": 1099, \"quantity\": -1}")
 
 	expected := NewError("Quantity cannot be negative.")
-	expectedJson, _ := json.Marshal(expected)
+	var responseItem ErrorResponse
+	err := json.Unmarshal(response.Body.Bytes(), &responseItem)
+	assert.Nil(t, err)
 	assert.Equal(t, 400, response.Code)
-	assert.Equal(t, string(expectedJson), response.Body.String())
+	assert.Equal(t, expected, responseItem)
 }

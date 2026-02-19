@@ -23,7 +23,7 @@ func (inventory *Inventory) GetItems() (storage.Items, error) {
 
 // calculateValue calculates the value of the specified items or all items if the IDs list is nil.
 // Returns the total value in cents or 0.0 and an error if retrieving items fails.
-func (inventory *Inventory) calculateValue(ids []uint) (int64, error) {
+func (inventory *Inventory) calculateValue(ids []uint64) (int64, error) {
 	sum := int64(0)
 	isEmptyQuery := ids == nil
 	items, err := inventory.persistence.GetItems()
@@ -42,7 +42,7 @@ func (inventory *Inventory) calculateValue(ids []uint) (int64, error) {
 
 // createItem adds a new item to the inventory.
 // Returns ID, the new item, or an error if adding or retrieving fails.
-func (inventory *Inventory) createItem(item storage.Item) (uint, storage.Item, error) {
+func (inventory *Inventory) createItem(item storage.Item) (uint64, storage.Item, error) {
 	newIdx, err := inventory.persistence.AddItem(item)
 	if err != nil {
 		return 0, storage.Item{}, err
@@ -56,13 +56,13 @@ func (inventory *Inventory) createItem(item storage.Item) (uint, storage.Item, e
 
 // delete removes an item from the inventory by its ID.
 // Returns an error if the operation fails.
-func (inventory *Inventory) delete(id uint) error {
+func (inventory *Inventory) delete(id uint64) error {
 	return inventory.persistence.DeleteItem(id)
 }
 
 // alterQuantity adjusts the quantity of an item in the inventory by the specified delta.
 // Returns the altered item or an error if the operation is invalid or fails.
-func (inventory *Inventory) alterQuantity(id uint, dQuantity int64) (storage.Item, error) {
+func (inventory *Inventory) alterQuantity(id uint64, dQuantity int64) (storage.Item, error) {
 	item, exists, err := inventory.persistence.GetItem(id)
 	if !exists {
 		return storage.Item{}, errors.New("item id does not exist")

@@ -7,12 +7,12 @@ type DeltaRequest struct {
 
 // IdsQuery represents a URL query that identifies a list of items by their IDs.
 type IdsQuery struct {
-	Ids []uint `form:"ids"`
+	Ids []uint64 `form:"ids"`
 }
 
 // ItemResponse represents a response containing the ID and all data of an item.
 type ItemResponse struct {
-	ID         uint   `json:"id"`
+	ID         uint64 `json:"id"`
 	Name       string `json:"name"`
 	PriceCents int64  `json:"price_cents"`
 	Quantity   int64  `json:"quantity"`
