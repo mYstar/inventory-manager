@@ -2,9 +2,9 @@ package storage
 
 // Item represents a single item in the inventory.
 type Item struct {
-	Name       string `json:"name"`
-	PriceCents int64  `json:"price_cents"`
-	Quantity   int64  `json:"quantity"`
+	Name       string `json:"name" binding:"required"`
+	PriceCents int64  `json:"price_cents" binding:"required"`
+	Quantity   int64  `json:"quantity" binding:"required"`
 }
 
 // Items represents a map of items indexed by their IDs.

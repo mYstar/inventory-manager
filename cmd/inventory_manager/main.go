@@ -15,11 +15,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	inventory := api.NewInventory(database)
 	router := gin.Default()
 	api.SetupRoutes(router, inventory)
 
-	err = router.Run("0.0.0.0:80")
+	err = router.Run("0.0.0.0:8080")
 	if err != nil {
 		panic(err)
 	}

@@ -15,13 +15,16 @@ REST API server to manage inventory items.
 
 ### testing
 
-TODO
+- to run all tests just use: `go test ./...`
 
 ## configuration
 
 - API server port can be configured via `API_PORT` environment variable
   - in `docker/.env`
   - or via: `API_PORT=8080 docker compose -f docker/docker-compose.yml up`
+- The filename of the sqlite database can be configured via `DB_FILE` environment variable
+  - in `docker/.env`
+  - or via: `DB_FILE=default.db docker compose -f docker/docker-compose.yml up`
 
 ## requests
 
@@ -35,7 +38,3 @@ These are defined in `api/openapi.yaml`. Overview:
 - `PATCH /item/1`: alter the quantity of the item with the given id
   - body: `{"quantity_delta": -5}`
 - `DELETE /item/1`: remove the item with the given id from the inventory
-
-## development
-
-TODO

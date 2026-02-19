@@ -72,7 +72,7 @@ func TestCreateItemWithInvalidJson(t *testing.T) {
 	router := initTestRouter()
 	response := sendTestRequest(router, "POST", "/item", "{")
 
-	expected := NewError("Request body is not valid JSON.")
+	expected := NewError("Request body invalid JSON or is missing required fields.")
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 400, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())
@@ -82,7 +82,7 @@ func TestCreateItemWithMissingValues(t *testing.T) {
 	router := initTestRouter()
 	response := sendTestRequest(router, "POST", "/item", "{\"name\": \"Book\", \"price_cents\": 1099}")
 
-	expected := NewError("Missing item data.")
+	expected := NewError("Request body invalid JSON or is missing required fields.")
 	expectedJson, _ := json.Marshal(expected)
 	assert.Equal(t, 400, response.Code)
 	assert.Equal(t, string(expectedJson), response.Body.String())

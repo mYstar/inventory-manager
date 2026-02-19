@@ -1,5 +1,7 @@
 package storage
 
+import "errors"
+
 // MemoryPersistence provides in-memory storage for items, facilitating operations on an `Items` collection.
 // The data of this persistence provider is not persisted across restarts.
 type MemoryPersistence struct {
@@ -34,6 +36,10 @@ func (memory MemoryPersistence) AddItem(item Item) (uint, error) {
 }
 
 func (memory MemoryPersistence) DeleteItem(id uint) error {
+	_, exists := memory.items[id]
+	if !exists {
+		return errors.New("item id does not exist")
+	}
 	delete(memory.items, id)
 	return nil
 }
