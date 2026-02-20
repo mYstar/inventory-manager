@@ -2,6 +2,8 @@ package storage
 
 import (
 	"database/sql"
+	"errors"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -22,7 +24,7 @@ func NewSqlitePersistence(dbFile string) (*SqlitePersistence, error) {
 	CREATE TABLE IF NOT EXISTS inventory (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name VARCHAR(128) NOT NULL,
-	    quantity INTEGER NOT NULL,
+	    quantity INTEGER NOT NULL CHECK(quantity >= 0),
 	    price_cents INTEGER NOT NULL
 	);`
 	_, err = db.Exec(initQuery)
@@ -89,9 +91,14 @@ func (s *SqlitePersistence) DeleteItem(id uint64) error {
 	return err
 }
 
-func (s *SqlitePersistence) UpdateItem(id uint64, item Item) error {
-	setQuery := "UPDATE inventory SET name = ?, quantity = ?, price_cents = ? WHERE id = ?"
-	_, err := s.db.Exec(setQuery, item.Name, item.Quantity, item.PriceCents, id)
+func (s *SqlitePersistence) AlterQuantityBy(id uint64, deltaQuantity int64) error {
+	setQuery := "UPDATE inventory SET quantity = quantity + ? WHERE id = ?"
+	_, err := s.db.Exec(setQuery, deltaQuantity, id)
+	if err != nil {
+		if strings.HasPrefix(err.Error(), "constraint failed: CHECK constraint failed: quantity") {
+			return errors.New("quantity is too small to perform the operation")
+		}
+	}
 
 	return err
 }

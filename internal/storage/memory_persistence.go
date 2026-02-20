@@ -44,9 +44,13 @@ func (m *MemoryPersistence) DeleteItem(id uint64) error {
 	return nil
 }
 
-func (m *MemoryPersistence) UpdateItem(id uint64, item Item) error {
-	_, exists := m.items[id]
+func (m *MemoryPersistence) AlterQuantityBy(id uint64, deltaQuantity int64) error {
+	item, exists := m.items[id]
 	if exists {
+		if item.Quantity+deltaQuantity < 0 {
+			return errors.New("quantity is too small to perform the operation")
+		}
+		item.Quantity += deltaQuantity
 		m.items[id] = item
 	}
 	return nil

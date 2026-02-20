@@ -63,19 +63,15 @@ func (inventory *Inventory) delete(id uint64) error {
 // alterQuantity adjusts the quantity of an item in the inventory by the specified delta.
 // Returns the altered item or an error if the operation is invalid or fails.
 func (inventory *Inventory) alterQuantity(id uint64, dQuantity int64) (storage.Item, error) {
+	err := inventory.persistence.AlterQuantityBy(id, dQuantity)
+	if err != nil {
+		return storage.Item{}, err
+	}
+
 	item, exists, err := inventory.persistence.GetItem(id)
 	if !exists {
 		return storage.Item{}, errors.New("item id does not exist")
 	}
-	if err != nil {
-		return storage.Item{}, err
-	}
-	newQuantity := item.Quantity + dQuantity
-	if newQuantity < 0 {
-		return storage.Item{}, errors.New("quantity is too small to perform the operation")
-	}
-	item.Quantity = newQuantity
-	err = inventory.persistence.UpdateItem(id, item)
 
 	return item, err
 }
