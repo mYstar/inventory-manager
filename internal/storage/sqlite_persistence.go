@@ -70,18 +70,18 @@ func (s *SqlitePersistence) GetItem(id uint64) (Item, bool, error) {
 	return item, true, nil
 }
 
-func (s *SqlitePersistence) AddItem(item Item) (uint64, error) {
+func (s *SqlitePersistence) AddItem(item Item) (uint64, Item, error) {
 	setQuery := "INSERT INTO inventory (name, quantity, price_cents) VALUES (?, ?, ?)"
 	result, err := s.db.Exec(setQuery, item.Name, item.Quantity, item.PriceCents)
 	if err != nil {
-		return 0, err
+		return 0, Item{}, err
 	}
 
 	newId, err := result.LastInsertId()
 	if err != nil {
-		return 0, err
+		return 0, Item{}, err
 	}
-	return uint64(newId), nil
+	return uint64(newId), item, nil
 }
 
 func (s *SqlitePersistence) DeleteItem(id uint64) error {
@@ -91,14 +91,21 @@ func (s *SqlitePersistence) DeleteItem(id uint64) error {
 	return err
 }
 
-func (s *SqlitePersistence) AlterQuantityBy(id uint64, deltaQuantity int64) error {
-	setQuery := "UPDATE inventory SET quantity = quantity + ? WHERE id = ?"
-	_, err := s.db.Exec(setQuery, deltaQuantity, id)
+func (s *SqlitePersistence) AlterQuantityBy(id uint64, deltaQuantity int64) (Item, error) {
+	setQuery := "UPDATE inventory SET quantity = quantity + ? WHERE id = ? RETURNING name, quantity, price_cents"
+	row := s.db.QueryRow(setQuery, deltaQuantity, id)
+
+	var item Item
+	err := row.Scan(&item.Name, &item.Quantity, &item.PriceCents)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "constraint failed: CHECK constraint failed: quantity") {
-			return errors.New("quantity is too small to perform the operation")
+		if errors.Is(err, sql.ErrNoRows) {
+			return item, errors.New("item id does not exist")
 		}
+		if strings.HasPrefix(err.Error(), "constraint failed: CHECK constraint failed: quantity") {
+			return Item{}, errors.New("quantity is too small to perform the operation")
+		}
+		return Item{}, err
 	}
 
-	return err
+	return item, nil
 }

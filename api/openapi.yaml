@@ -107,7 +107,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResultItem'
+                $ref: '#/components/schemas/Item'
         '400':
           description: The given id is not an unsigned int.
           content:
@@ -196,28 +196,16 @@ components:
       required: [name, quantity, price_cents]
 
     ResultItem:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          minimum: 0
-          example: 1
-          description: The ID of the inventory item.
-        name:
-          type: string
-          example: 'Table'
-          description: The name of the inventory item.
-        quantity:
-          type: integer
-          format: int64
-          example: 10
-          description: The current quantity of the inventory item.
-        price_cents:
-          type: integer
-          format: int64
-          example: 11999
-          description: The monetary value of the inventory item in euro.
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              minimum: 0
+              example: 1
+              description: The ID of the inventory item.
+        - $ref: '#/components/schemas/Item'
 
     Delta:
       type: object

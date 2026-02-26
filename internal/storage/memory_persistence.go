@@ -22,7 +22,7 @@ func (m *MemoryPersistence) GetItem(id uint64) (Item, bool, error) {
 	return item, exists, nil
 }
 
-func (m *MemoryPersistence) AddItem(item Item) (uint64, error) {
+func (m *MemoryPersistence) AddItem(item Item) (uint64, Item, error) {
 	maxKey := uint64(0)
 	for key := range m.items {
 		if key > maxKey {
@@ -32,7 +32,7 @@ func (m *MemoryPersistence) AddItem(item Item) (uint64, error) {
 	newIdx := maxKey + 1
 	m.items[newIdx] = item
 
-	return newIdx, nil
+	return newIdx, item, nil
 }
 
 func (m *MemoryPersistence) DeleteItem(id uint64) error {
@@ -44,14 +44,17 @@ func (m *MemoryPersistence) DeleteItem(id uint64) error {
 	return nil
 }
 
-func (m *MemoryPersistence) AlterQuantityBy(id uint64, deltaQuantity int64) error {
+func (m *MemoryPersistence) AlterQuantityBy(id uint64, deltaQuantity int64) (Item, error) {
 	item, exists := m.items[id]
-	if exists {
-		if item.Quantity+deltaQuantity < 0 {
-			return errors.New("quantity is too small to perform the operation")
-		}
-		item.Quantity += deltaQuantity
-		m.items[id] = item
+	if !exists {
+		return item, errors.New("item id does not exist")
 	}
-	return nil
+	if item.Quantity+deltaQuantity < 0 {
+		return item, errors.New("quantity is too small to perform the operation")
+	}
+
+	item.Quantity += deltaQuantity
+	m.items[id] = item
+
+	return item, nil
 }

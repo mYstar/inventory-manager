@@ -17,11 +17,11 @@ type InventoryPersistence interface {
 	// GetItem returns an item with the specified ID or an error if retrieving fails.
 	GetItem(uint64) (Item, bool, error)
 	// AddItem adds a new item to the inventory and returns its ID or an error if adding fails.
-	AddItem(item Item) (uint64, error)
+	AddItem(item Item) (uint64, Item, error)
 	// AlterQuantityBy updates the quantity of an existing item with the specified ID in the inventory
 	// or returns an error if updating fails.
 	// Has no effect if the item does not exist.
-	AlterQuantityBy(uint64, int64) error
+	AlterQuantityBy(uint64, int64) (Item, error)
 	// DeleteItem removes an item from the inventory or returns an error if deleting fails.
 	DeleteItem(uint64) error
 }

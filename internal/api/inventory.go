@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"inventory_manager/internal/storage"
 	"slices"
 )
@@ -43,15 +42,7 @@ func (inventory *Inventory) calculateValue(ids []uint64) (int64, error) {
 // createItem adds a new item to the inventory.
 // Returns ID, the new item, or an error if adding or retrieving fails.
 func (inventory *Inventory) createItem(item storage.Item) (uint64, storage.Item, error) {
-	newIdx, err := inventory.persistence.AddItem(item)
-	if err != nil {
-		return 0, storage.Item{}, err
-	}
-	newItem, exists, err := inventory.persistence.GetItem(newIdx)
-	if !exists {
-		return 0, storage.Item{}, errors.New("item not found after creation")
-	}
-	return newIdx, newItem, err
+	return inventory.persistence.AddItem(item)
 }
 
 // delete removes an item from the inventory by its ID.
@@ -63,15 +54,10 @@ func (inventory *Inventory) delete(id uint64) error {
 // alterQuantity adjusts the quantity of an item in the inventory by the specified delta.
 // Returns the altered item or an error if the operation is invalid or fails.
 func (inventory *Inventory) alterQuantity(id uint64, dQuantity int64) (storage.Item, error) {
-	err := inventory.persistence.AlterQuantityBy(id, dQuantity)
+	item, err := inventory.persistence.AlterQuantityBy(id, dQuantity)
 	if err != nil {
 		return storage.Item{}, err
 	}
 
-	item, exists, err := inventory.persistence.GetItem(id)
-	if !exists {
-		return storage.Item{}, errors.New("item id does not exist")
-	}
-
-	return item, err
+	return item, nil
 }
